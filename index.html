@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071b3d"><meta name="description" content="Família Financeira — controle financeiro compartilhado.">
+<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="style.css"><title>Família Financeira</title>
+</head>
+<body>
+<div id="login" class="login-screen">
+  <div class="login-glow glow-a"></div><div class="login-glow glow-b"></div>
+  <div class="login-box">
+    <div class="brand-mark"><span>FF</span></div>
+    <div class="login-kicker">FAMÍLIA FINANCEIRA</div>
+    <h1>Seu dinheiro, <span>mais organizado.</span></h1>
+    <p>Controle financeiro compartilhado, simples e elegante.</p>
+    <label for="email">E-mail</label><input id="email" type="email" autocomplete="username" placeholder="seu@email.com">
+    <label for="password">Senha</label><input id="password" type="password" autocomplete="current-password" placeholder="Sua senha">
+    <button id="loginBtn" class="primary login-button">Entrar no painel <span>→</span></button>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark small"><span>FF</span></div><div><b>Família</b><strong>Financeira</strong></div></div>
+    <div class="sidebar-label">MENU PRINCIPAL</div>
+    <nav class="side-nav">
+      <button data-view="home" class="active"><span>⌂</span> Dashboard</button>
+      <button data-view="finances"><span>◉</span> Finanças</button>
+      <button data-view="calendar"><span>□</span> Calendário</button>
+      <button data-view="goals"><span>◎</span> Metas</button>
+      <button data-view="profile"><span>♙</span> Perfil</button>
+    </nav>
+    <div class="sidebar-label lower">CONTA</div>
+    <button id="logoutSide" class="side-logout"><span>↪</span> Sair</button>
+    <div class="sidebar-footer">Família Financeira<br><span>Versão 2.0</span></div>
+  </aside>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <div><div class="overline">VISÃO GERAL DA FAMÍLIA</div><h2>Olá, <span id="userName">Família</span> 👋</h2><p>Veja como estão suas finanças hoje.</p></div>
+      <div class="top-actions"><button class="icon-circle" title="Notificações">♢<i></i></button><div class="family-chip"><div class="avatar" id="avatarLetter">F</div><div><b>Minha família</b><small id="roleMini">Conta</small></div><span>⌄</span></div><button id="logoutBtn" class="logout-top">Sair</button></div>
+    </header>
+
+    <main>
+      <section id="view-home" class="view">
+        <div class="toolbar"><div><h1>Dashboard</h1><span id="month" class="muted"></span></div><button id="quickAddTop" class="primary quick-btn">＋ Novo lançamento</button></div>
+
+        <section class="metric-grid premium">
+          <article class="metric-card income-card"><div class="metric-head"><span class="metric-icon">↗</span><span>RECEITAS</span><em>Este mês</em></div><b id="income">R$ 0,00</b><small id="incomeHint">Total recebido</small></article>
+          <article class="metric-card expense-card"><div class="metric-head"><span class="metric-icon">↘</span><span>DESPESAS</span><em>Este mês</em></div><b id="expense">R$ 0,00</b><small id="expenseHint">Total gasto</small></article>
+          <article class="metric-card balance-card"><div class="metric-head"><span class="metric-icon">▣</span><span>SALDO</span><em>Disponível</em></div><b id="balance">R$ 0,00</b><small id="health">—</small></article>
+          <article class="metric-card goal-count-card"><div class="metric-head"><span class="metric-icon">◎</span><span>METAS</span><em>Em andamento</em></div><b id="goalCount">0</b><small>objetivos cadastrados</small></article>
+          <article class="metric-card financing-card"><div class="metric-head"><span class="metric-icon">▤</span><span>FINANCIAMENTOS</span><em>Em aberto</em></div><b id="finCount">0</b><small>financiamentos ativos</small></article>
+        </section>
+
+        <div class="dashboard-grid">
+          <section class="panel balance-hero"><div class="hero-copy"><span>SALDO FAMILIAR</span><strong id="heroBalance">R$ 0,00</strong><small>Resultado líquido dos lançamentos</small><button class="hero-button" data-view="finances">Ver detalhes das contas <span>→</span></button></div><div class="hero-art"><div class="mini-bars"><i></i><i></i><i></i><i></i><i></i></div><div class="credit-card-art"><span>FF</span><b>•••• 1234</b></div></div></section>
+          <section class="panel side-panel"><div class="panel-title"><div><span class="eyebrow">AGENDA</span><h3>Próximos pagamentos</h3></div><span>Ver todos</span></div><div id="upcoming" class="stack"></div></section>
+          <section class="panel chart-panel"><div class="panel-title"><div><span class="eyebrow">MOVIMENTO</span><h3>Receitas × despesas</h3></div><span id="chartMonth">Este mês</span></div><div class="chart-wrap"><div class="chart-y"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div><div class="chart-area"><div class="grid-lines"><i></i><i></i><i></i><i></i><i></i></div><div class="chart-bars"><div class="chart-col"><i id="incomeBar"></i><span>Receitas</span></div><div class="chart-col"><i id="expenseBar"></i><span>Despesas</span></div></div></div></div><div class="chart-footer"><div><small>Total receitas</small><b id="chartIncome">R$ 0,00</b></div><div class="economy-ring" id="economyRing"><span id="economyPct">0%</span><small>economia</small></div><div class="right"><small>Total despesas</small><b id="chartExpense">R$ 0,00</b></div></div></section>
+          <section class="panel goals-panel"><div class="panel-title"><div><span class="eyebrow">PLANEJAMENTO</span><h3>Metas em andamento</h3></div><button data-view="goals" class="link-btn">Ver todas</button></div><div id="goals" class="stack"></div></section>
+          <section class="panel transactions-panel"><div class="panel-title"><div><span class="eyebrow">ATIVIDADE</span><h3>Últimas movimentações</h3></div><button data-view="finances" class="link-btn">Ver todas</button></div><div id="recentTransactions" class="stack"></div></section>
+          <section class="panel analysis-panel"><div class="panel-title"><div><span class="eyebrow">INSIGHT</span><h3>Análise do mês</h3></div><span>Automática</span></div><div class="analysis-box"><div class="analysis-icon">✦</div><span>Você economizou</span><strong id="analysisValue">R$ 0,00</strong><small id="analysisText">Continue acompanhando seus lançamentos para visualizar sua evolução.</small></div></section>
+        </div>
+        <section class="panel admin-only activity-panel"><div class="panel-title"><div><span class="eyebrow">ADMINISTRADOR</span><h3>Atividade recente</h3></div><span>ADM</span></div><div id="activity" class="stack"></div></section>
+      </section>
+
+      <section id="view-finances" class="view hidden"><div class="toolbar"><div><h1>Finanças</h1><span class="muted">Todos os lançamentos da família</span></div><button class="primary quick-btn" data-open="transaction">＋ Lançamento</button></div><section class="panel"><div class="filters"><select id="txFilter"><option value="all">Todos os lançamentos</option><option value="income">Receitas</option><option value="expense">Despesas</option></select></div><div id="transactions" class="stack"></div></section></section>
+      <section id="view-calendar" class="view hidden"><div class="toolbar"><div><h1>Calendário</h1><span class="muted">Vencimentos e compromissos</span></div><span id="calendarMonth" class="month-pill"></span></div><section class="panel"><div id="calendar" class="calendar"></div><div id="calendarList" class="stack"></div></section></section>
+      <section id="view-goals" class="view hidden"><div class="toolbar"><div><h1>Metas</h1><span class="muted">Planeje os próximos objetivos</span></div><button class="primary quick-btn" data-open="goal">＋ Nova meta</button></div><section class="panel"><div id="goalsFull" class="stack"></div></section></section>
+      <section id="view-profile" class="view hidden"><div class="toolbar"><div><h1>Perfil</h1><span class="muted">Dados da sua conta</span></div></div><section class="panel profile"><div class="profile-avatar" id="profileAvatar">F</div><h3 id="profileName">—</h3><p id="profileEmail">—</p><p id="profileRole">—</p></section></section>
+    </main>
+  </div>
+  <button id="quickAdd" class="fab" title="Adicionar">＋</button>
+  <nav class="mobile-nav"><button data-view="home" class="active"><span>⌂</span><small>Início</small></button><button data-view="finances"><span>◉</span><small>Finanças</small></button><button id="mobileAdd"><b>＋</b></button><button data-view="goals"><span>◎</span><small>Metas</small></button><button data-view="profile"><span>♙</span><small>Perfil</small></button></nav>
+</div>
+<div id="modal" class="modal hidden"><div class="modal-card"><button id="closeModal" class="modal-close">×</button><div id="modalContent"></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="app.js"></script>
+</body></html>

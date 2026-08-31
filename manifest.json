@@ -1,0 +1,9 @@
+{
+  "name":"Família Financeira",
+  "short_name":"Família Financeira",
+  "start_url":"./index.html",
+  "display":"standalone",
+  "background_color":"#f5f7fb",
+  "theme_color":"#071b3d",
+  "icons":[]
+}
