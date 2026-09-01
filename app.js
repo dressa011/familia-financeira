@@ -1,4 +1,4 @@
-let db=null, me=null, profile=null, channel=null, reportTransactions=[], reportDocs=new Set();
+let db=null, me=null, profile=null, channel=null, reportTransactions=[], reportDocs=new Set(), allTransactions=[];
 const $=s=>document.querySelector(s); const $$=s=>[...document.querySelectorAll(s)];
 const money=n=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(n||0));
 const dateBR=s=>s?new Date(`${s}T12:00:00`).toLocaleDateString('pt-BR'):'—';
@@ -55,6 +55,8 @@ async function loadAll(){
   if(l.error) console.error('audit_logs:',l.error);
 
   const tx=t.data||[], goals=g.data||[], fin=f.data||[], logs=l.data||[];
+   allTransactions=tx;
+   reportTransactions=tx;
 
   // Busca os nomes separadamente, evitando dependência do nome interno de uma FK.
   const ids=[...new Set([
@@ -154,11 +156,19 @@ function renderCalendar(tx){
 }
 function applyTxFilter(){const f=$('#txFilter').value; $$('#transactions .row').forEach(r=>{const txt=r.textContent; r.style.display=f==='all'||(f==='income'&&txt.includes('Receita'))||(f==='expense'&&txt.includes('Despesa'))?'':'none';});}
 async function loadReport(){
-  const {data,error}=await db.from('transactions').select('id,type,amount,description,status,due_date,paid_at,created_at').order('due_date',{ascending:false,nullsFirst:false});
-  if(error){alert('Não foi possível carregar o relatório: '+error.message);return;}
-  reportTransactions=data||[];
+  // O Dashboard já carregou os lançamentos com sucesso. O relatório usa essa mesma lista,
+  // evitando uma segunda consulta que pode ficar vazia por causa de permissões/RLS.
+  reportTransactions=allTransactions||[];
+  if(!reportTransactions.length){
+    const {data,error}=await db.from('transactions').select('id,type,amount,description,status,due_date,paid_at,created_at').order('due_date',{ascending:false,nullsFirst:false});
+    if(error){alert('Não foi possível carregar o relatório: '+error.message);return;}
+    reportTransactions=data||[];
+  }
   const dr=await db.from('documents').select('transaction_id');
   reportDocs=new Set((dr.data||[]).map(x=>x.transaction_id));
+  // Ao abrir o relatório, mostrar tudo. O usuário pode escolher um mês no filtro.
+  const monthInput=$('#reportMonth');
+  if(monthInput && !monthInput.dataset.userChanged) monthInput.value='';
   renderReport();
 }
 function renderReport(){
@@ -229,4 +239,4 @@ window.deleteTx=async id=>{if(!confirm('Excluir este lançamento?'))return;const
 window.deleteGoal=async id=>{if(!confirm('Excluir esta meta?'))return;const {error}=await db.from('goals').delete().eq('id',id);if(error)alert(error.message);else await loadAll()};
 window.addToGoal=async id=>{const v=prompt('Quanto deseja adicionar à meta?');if(v===null)return;const n=Number(v);if(!n||n<0)return alert('Informe um valor válido.');const {data,error}=await db.from('goals').select('current_amount').eq('id',id).single();if(error)return alert(error.message);const r=await db.from('goals').update({current_amount:Number(data.current_amount)+n,updated_at:new Date().toISOString()}).eq('id',id);if(r.error)alert(r.error.message);else await loadAll()};
 function showError(m){console.error(m);alert(m)}
-$('#loginBtn').onclick=login;$('#password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});$('#logoutBtn').onclick=async()=>{await db.auth.signOut();location.reload()}; $('#logoutSide').onclick=async()=>{await db.auth.signOut();location.reload()};$('#quickAdd').onclick=()=>openModal('transaction'); $('#quickAddTop').onclick=()=>openModal('transaction'); $('#mobileAdd').onclick=()=>openModal('transaction');$('#closeModal').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});$('#txFilter').addEventListener('change',applyTxFilter);$('#reportMonth')?.addEventListener('change',renderReport);$('#reportAllBtn')?.addEventListener('click',()=>{ $('#reportMonth').value=''; renderReport(); });$('#reportPrintBtn')?.addEventListener('click',printReport);$$('.nav button,.side-nav button,.mobile-nav button[data-view],.hero-button,[data-view]').forEach(b=>{if(b.dataset.view)b.onclick=()=>showView(b.dataset.view)});$$('[data-open]').forEach(b=>b.onclick=()=>openModal(b.dataset.open));start();
+$('#loginBtn').onclick=login;$('#password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});$('#logoutBtn').onclick=async()=>{await db.auth.signOut();location.reload()}; $('#logoutSide').onclick=async()=>{await db.auth.signOut();location.reload()};$('#quickAdd').onclick=()=>openModal('transaction'); $('#quickAddTop').onclick=()=>openModal('transaction'); $('#mobileAdd').onclick=()=>openModal('transaction');$('#closeModal').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});$('#txFilter').addEventListener('change',applyTxFilter);$('#reportMonth')?.addEventListener('change',e=>{e.target.dataset.userChanged='1';renderReport();});$('#reportAllBtn')?.addEventListener('click',()=>{ $('#reportMonth').value=''; renderReport(); });$('#reportPrintBtn')?.addEventListener('click',printReport);$$('.nav button,.side-nav button,.mobile-nav button[data-view],.hero-button,[data-view]').forEach(b=>{if(b.dataset.view)b.onclick=()=>showView(b.dataset.view)});$$('[data-open]').forEach(b=>b.onclick=()=>openModal(b.dataset.open));start();
