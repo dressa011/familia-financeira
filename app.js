@@ -1,4 +1,4 @@
-let db=null, me=null, profile=null, channel=null;
+let db=null, me=null, profile=null, channel=null, reportTransactions=[], reportDocs=new Set();
 const $=s=>document.querySelector(s); const $$=s=>[...document.querySelectorAll(s)];
 const money=n=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(n||0));
 const dateBR=s=>s?new Date(`${s}T12:00:00`).toLocaleDateString('pt-BR'):'—';
@@ -153,7 +153,42 @@ function renderCalendar(tx){
   $('#calendarList').innerHTML=monthTx.map(txRow).join('')||'<div class="empty">Nenhum vencimento neste mês.</div>';
 }
 function applyTxFilter(){const f=$('#txFilter').value; $$('#transactions .row').forEach(r=>{const txt=r.textContent; r.style.display=f==='all'||(f==='income'&&txt.includes('Receita'))||(f==='expense'&&txt.includes('Despesa'))?'':'none';});}
-function showView(name){$$('.view').forEach(v=>v.classList.add('hidden'));const target=$('#view-'+name);if(target)target.classList.remove('hidden');$$('.side-nav button,.mobile-nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));window.scrollTo({top:0,behavior:'smooth'});}
+async function loadReport(){
+  const {data,error}=await db.from('transactions').select('id,type,amount,description,status,due_date,paid_at,created_at').order('due_date',{ascending:false,nullsFirst:false});
+  if(error){alert('Não foi possível carregar o relatório: '+error.message);return;}
+  reportTransactions=data||[];
+  const dr=await db.from('documents').select('transaction_id');
+  reportDocs=new Set((dr.data||[]).map(x=>x.transaction_id));
+  renderReport();
+}
+function renderReport(){
+  const month=$('#reportMonth')?.value||'';
+  const tx=month?reportTransactions.filter(x=>(x.due_date||x.created_at||'').startsWith(month)):reportTransactions;
+  const inc=tx.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);
+  const exp=tx.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);
+  $('#reportIncome').textContent=money(inc);
+  $('#reportExpense').textContent=money(exp);
+  $('#reportBalance').textContent=money(inc-exp);
+  $('#reportPaid').textContent=tx.filter(x=>x.status==='paid').length;
+  $('#reportPending').textContent=tx.filter(x=>x.status==='pending').length;
+  $('#reportOverdue').textContent=tx.filter(x=>x.status==='overdue').length;
+  $('#reportPeriodLabel').textContent=month?new Date(month+'-01T12:00:00').toLocaleDateString('pt-BR',{month:'long',year:'numeric'}):'Todos os períodos';
+  $('#reportRows').innerHTML=tx.length?tx.map(x=>{
+    const type=x.type==='income'?'Receita':'Despesa';
+    const status=x.status==='paid'?'Pago':x.status==='overdue'?'Atrasado':'Pendente';
+    const pdf=reportDocs.has(x.id)?'📎 Sim':'—';
+    return `<tr><td>${dateBR(x.due_date)}</td><td>${esc(x.description)}</td><td>${type}</td><td class="report-value ${x.type}">${x.type==='expense'?'-':''}${money(x.amount)}</td><td><span class="tx-status ${x.status}">${status}</span></td><td>${pdf}</td></tr>`;
+  }).join(''):'<tr><td colspan="6" class="report-empty">Nenhum lançamento encontrado para o período.</td></tr>';
+}
+function printReport(){
+  const report=$('#view-report');
+  if(!report)return;
+  const w=window.open('','_blank');
+  if(!w){alert('Permita pop-ups no navegador para imprimir o relatório.');return;}
+  w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório Completo - Família Financeira</title><style>body{font-family:Arial,sans-serif;padding:28px;color:#172033}h1{margin:0 0 6px}p{color:#667085}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}.card{border:1px solid #ddd;border-radius:10px;padding:12px}.card b{display:block;font-size:20px;margin-top:6px}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px}th{background:#f4f6f8}.num{text-align:right}@media print{button{display:none}}</style></head><body><h1>Relatório Completo</h1><p>Família Financeira · ${esc($('#reportPeriodLabel').textContent)}</p><div class="cards"><div class="card">Receitas<b>${esc($('#reportIncome').textContent)}</b></div><div class="card">Despesas<b>${esc($('#reportExpense').textContent)}</b></div><div class="card">Saldo<b>${esc($('#reportBalance').textContent)}</b></div><div class="card">Pagas<b>${esc($('#reportPaid').textContent)}</b></div><div class="card">Pendentes<b>${esc($('#reportPending').textContent)}</b></div><div class="card">Atrasadas<b>${esc($('#reportOverdue').textContent)}</b></div></div>${$('#view-report .report-table').outerHTML}</body></html>`);
+  w.document.close();w.focus();setTimeout(()=>w.print(),300);
+}
+function showView(name){$$('.view').forEach(v=>v.classList.add('hidden'));const target=$('#view-'+name);if(target)target.classList.remove('hidden');$$('.side-nav button,.mobile-nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));if(name==='report')loadReport();window.scrollTo({top:0,behavior:'smooth'});}
 function openModal(type){let title='',html='';if(type==='transaction'){title='Novo lançamento';html=`<form id="txForm"><label>Tipo</label><select name="type"><option value="expense">Despesa</option><option value="income">Receita</option></select><label>Descrição</label><input name="description" required placeholder="Ex.: Supermercado"><label>Valor</label><input name="amount" type="number" step="0.01" min="0" required><label>Vencimento</label><input name="due_date" type="date"><label>Status</label><select name="status"><option value="pending">Pendente</option><option value="paid">Pago</option></select><button class="primary">Salvar lançamento</button></form>`}else{title='Nova meta';html=`<form id="goalForm"><label>Nome</label><input name="name" required placeholder="Ex.: Reserva de emergência"><label>Valor da meta</label><input name="target_amount" type="number" step="0.01" min="0.01" required><label>Valor já guardado</label><input name="current_amount" type="number" step="0.01" min="0" value="0"><label>Prazo</label><input name="deadline" type="date"><label>Descrição</label><textarea name="description" rows="3"></textarea><button class="primary">Salvar meta</button></form>`}$('#modalContent').innerHTML=`<h3>${title}</h3>${html}`;$('#modal').classList.remove('hidden');$('#txForm')?.addEventListener('submit',saveTransaction);$('#goalForm')?.addEventListener('submit',saveGoal)}
 function closeModal(){$('#modal').classList.add('hidden')}
 async function saveTransaction(e){e.preventDefault();const f=new FormData(e.target), payload={type:f.get('type'),description:f.get('description'),amount:Number(f.get('amount')),due_date:f.get('due_date')||null,status:f.get('status'),created_by:me.id,responsible_profile_id:me.id,paid_at:f.get('status')==='paid'?new Date().toISOString():null};const {error}=await db.from('transactions').insert(payload);if(error){alert(error.message);return;}closeModal();await loadAll();}
@@ -194,72 +229,4 @@ window.deleteTx=async id=>{if(!confirm('Excluir este lançamento?'))return;const
 window.deleteGoal=async id=>{if(!confirm('Excluir esta meta?'))return;const {error}=await db.from('goals').delete().eq('id',id);if(error)alert(error.message);else await loadAll()};
 window.addToGoal=async id=>{const v=prompt('Quanto deseja adicionar à meta?');if(v===null)return;const n=Number(v);if(!n||n<0)return alert('Informe um valor válido.');const {data,error}=await db.from('goals').select('current_amount').eq('id',id).single();if(error)return alert(error.message);const r=await db.from('goals').update({current_amount:Number(data.current_amount)+n,updated_at:new Date().toISOString()}).eq('id',id);if(r.error)alert(r.error.message);else await loadAll()};
 function showError(m){console.error(m);alert(m)}
-$('#loginBtn').onclick=login;$('#password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});$('#logoutBtn').onclick=async()=>{await db.auth.signOut();location.reload()}; $('#logoutSide').onclick=async()=>{await db.auth.signOut();location.reload()};$('#quickAdd').onclick=()=>openModal('transaction'); $('#quickAddTop').onclick=()=>openModal('transaction'); $('#mobileAdd').onclick=()=>openModal('transaction');$('#closeModal').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});$('#txFilter').addEventListener('change',applyTxFilter);$$('.nav button,.side-nav button,.mobile-nav button[data-view],.hero-button,[data-view]').forEach(b=>{if(b.dataset.view)b.onclick=()=>showView(b.dataset.view)});$$('[data-open]').forEach(b=>b.onclick=()=>openModal(b.dataset.open));start();
-
-/* ===== RELATÓRIO COMPLETO — usa somente os dados já existentes ===== */
-let reportCache = [];
-
-function reportMoney(v){
-  return Number(v || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-}
-function reportDate(v){
-  if(!v) return '-';
-  const d=new Date(v);
-  return isNaN(d) ? String(v) : d.toLocaleDateString('pt-BR');
-}
-function reportStatus(t){
-  if(t.status==='paid') return '✓ Pago';
-  if(t.status==='overdue') return '🔴 Atrasado';
-  return '⏳ Pendente';
-}
-function reportType(t){
-  const typ=String(t.type || t.kind || '').toLowerCase();
-  return (typ==='income'||typ==='receita'||typ==='entrada') ? 'Receita' : 'Despesa';
-}
-function renderCompleteReport(){
-  const monthEl=document.getElementById('reportMonth');
-  const selected=monthEl ? monthEl.value : '';
-  let rows=reportCache.slice();
-  if(selected){
-    rows=rows.filter(t=>String(t.date || t.due_date || t.created_at || '').slice(0,7)===selected);
-  }
-  let income=0, expense=0, paid=0, pending=0, overdue=0;
-  rows.forEach(t=>{
-    const val=Number(t.amount || t.value || 0);
-    if(reportType(t)==='Receita') income+=val; else expense+=val;
-    if(t.status==='paid') paid++;
-    else if(t.status==='overdue') overdue++;
-    else pending++;
-  });
-  const set=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=val;};
-  set('reportIncome',reportMoney(income));
-  set('reportExpense',reportMoney(expense));
-  set('reportBalance',reportMoney(income-expense));
-  set('reportPaid',paid); set('reportPending',pending); set('reportOverdue',overdue);
-  const body=document.getElementById('reportRows');
-  if(!body)return;
-  body.innerHTML=rows.map(t=>{
-    const desc=t.description || t.title || t.name || t.category || 'Sem descrição';
-    const safe=String(desc).replace(/[&<>"]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
-    const docs=Array.isArray(t.documents)?t.documents.length:Number(t.document_count||0);
-    return `<tr><td>${reportDate(t.date||t.due_date)}</td><td>${safe}</td><td>${reportType(t)}</td><td>${reportMoney(t.amount||t.value)}</td><td>${reportStatus(t)}</td><td>${docs?'📎 Sim':'—'}</td></tr>`;
-  }).join('') || '<tr><td colspan="6">Nenhum lançamento encontrado.</td></tr>';
-}
-async function loadCompleteReport(){
-  try{
-    const {data,error}=await db.from('transactions').select('*').order('date',{ascending:false});
-    if(error){alert('Não foi possível carregar o relatório: '+error.message);return;}
-    reportCache=data||[]; renderCompleteReport();
-  }catch(e){alert('Não foi possível carregar o relatório: '+e.message);}
-}
-function openCompleteReport(){
-  document.querySelectorAll('main > section').forEach(s=>{if(s.id!=='reportSection')s.hidden=true;});
-  const sec=document.getElementById('reportSection'); if(sec)sec.hidden=false;
-  loadCompleteReport();
-}
-document.addEventListener('DOMContentLoaded',()=>{
-  const nav=document.getElementById('reportNav'); if(nav)nav.addEventListener('click',openCompleteReport);
-  const month=document.getElementById('reportMonth'); if(month)month.addEventListener('change',renderCompleteReport);
-  const all=document.getElementById('reportAllBtn'); if(all)all.addEventListener('click',()=>{if(month)month.value='';renderCompleteReport();});
-  const print=document.getElementById('reportPrintBtn'); if(print)print.addEventListener('click',()=>window.print());
-});
+$('#loginBtn').onclick=login;$('#password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});$('#logoutBtn').onclick=async()=>{await db.auth.signOut();location.reload()}; $('#logoutSide').onclick=async()=>{await db.auth.signOut();location.reload()};$('#quickAdd').onclick=()=>openModal('transaction'); $('#quickAddTop').onclick=()=>openModal('transaction'); $('#mobileAdd').onclick=()=>openModal('transaction');$('#closeModal').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});$('#txFilter').addEventListener('change',applyTxFilter);$('#reportMonth')?.addEventListener('change',renderReport);$('#reportAllBtn')?.addEventListener('click',()=>{ $('#reportMonth').value=''; renderReport(); });$('#reportPrintBtn')?.addEventListener('click',printReport);$$('.nav button,.side-nav button,.mobile-nav button[data-view],.hero-button,[data-view]').forEach(b=>{if(b.dataset.view)b.onclick=()=>showView(b.dataset.view)});$$('[data-open]').forEach(b=>b.onclick=()=>openModal(b.dataset.open));start();
