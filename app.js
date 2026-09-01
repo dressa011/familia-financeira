@@ -177,9 +177,7 @@ window.uploadDoc=async (transactionId,file)=>{
   if(file.size>10*1024*1024){alert('O PDF deve ter no máximo 10 MB.');return;}
   const path=`${me.id}/${transactionId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
   const up=await db.storage.from('documents').upload(path,file,{contentType:'application/pdf',upsert:false});
-  if(up.error){alert('Não foi possível enviar o PDF. Verifique se o Storage do Supabase possui um bucket "documents" e as permissões de upload.
-
-'+up.error.message);return;}
+  if(up.error){alert('Não foi possível enviar o PDF. Verifique se o Storage do Supabase possui um bucket "documents" e as permissões de upload.\n'+up.error.message);return;}
   const ins=await db.from('documents').insert({transaction_id:transactionId,file_name:file.name,storage_path:path,uploaded_by:me.id});
   if(ins.error){await db.storage.from('documents').remove([path]);alert('O PDF foi enviado, mas não foi possível registrar o comprovante: '+ins.error.message);return;}
   alert('PDF anexado com sucesso!'); await manageDocs(transactionId);
