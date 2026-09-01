@@ -31,3 +31,21 @@
 .pay-btn:hover,.pdf-btn:hover,.secondary:hover{filter:brightness(.97)}
 .tx-status.paid{color:#16834b;font-weight:700}.tx-status.pending{color:#b56a00;font-weight:700}.tx-status.overdue{color:#d33b3b;font-weight:700}
 .doc-help{color:#68758a;margin-top:-8px}.doc-list{margin-top:16px;border-top:1px solid #e6ebf2}.doc-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e6ebf2}
+
+/* ===== Relatório Completo ===== */
+.report-section{padding:24px;max-width:1200px;margin:0 auto}
+.report-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:20px}
+.report-head h2{margin:0 0 6px}.report-head p{margin:0;opacity:.7}
+.report-actions{display:flex;align-items:end;gap:10px;flex-wrap:wrap}
+.report-actions label{display:flex;flex-direction:column;gap:5px;font-size:12px}
+.report-actions input{padding:8px;border-radius:8px;border:1px solid #ccd3df}
+.report-actions button{padding:9px 12px;border:0;border-radius:8px;cursor:pointer}
+.report-cards{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:12px;margin-bottom:20px}
+.report-card{padding:16px;border-radius:12px;border:1px solid #e2e6ee;background:rgba(255,255,255,.7)}
+.report-card span{display:block;font-size:12px;opacity:.65;margin-bottom:6px}.report-card strong{font-size:18px}
+.report-table-wrap{overflow:auto;background:rgba(255,255,255,.7);border-radius:12px;border:1px solid #e2e6ee}
+.report-table{width:100%;border-collapse:collapse}
+.report-table th,.report-table td{padding:11px;border-bottom:1px solid #e8ebf0;text-align:left;white-space:nowrap}
+.report-table th{font-size:12px}
+@media(max-width:900px){.report-cards{grid-template-columns:repeat(2,1fr)}.report-head{align-items:stretch;flex-direction:column}}
+@media print{body *{visibility:hidden!important}#reportSection,#reportSection *{visibility:visible!important}#reportSection{position:absolute;left:0;top:0;width:100%;padding:0}.report-actions{display:none!important}}
