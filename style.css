@@ -474,3 +474,151 @@ input,select,textarea{background:#151c26!important;border-color:#3a4554!importan
     radial-gradient(circle at 65% 90%,#8c2cff38,transparent 32%),
     linear-gradient(135deg,#151b27,#20253a 55%,#29164a)!important;
 }
+
+
+/* ===== 3.0 — White Vibrant / Elegante ===== */
+:root{
+  --ff-bg:#f7f8fc;
+  --ff-surface:#ffffff;
+  --ff-surface-2:#fbfbff;
+  --ff-border:#e7e9f2;
+  --ff-text:#172033;
+  --ff-muted:#697386;
+  --ff-purple:#7c3aed;
+  --ff-blue:#1683ff;
+  --ff-green:#16b364;
+  --ff-red:#f04438;
+  --ff-orange:#f79009;
+}
+
+html,body{
+  background:#f7f8fc!important;
+  color:var(--ff-text)!important;
+}
+
+body{
+  background:
+    radial-gradient(circle at 85% 0%, rgba(124,58,237,.08), transparent 28%),
+    radial-gradient(circle at 5% 15%, rgba(22,131,255,.06), transparent 24%),
+    #f7f8fc!important;
+}
+
+.sidebar{
+  background:linear-gradient(180deg,#ffffff 0%,#f8f7ff 100%)!important;
+  border-right:1px solid #e7e9f2!important;
+  box-shadow:4px 0 24px rgba(31,41,55,.05)!important;
+}
+
+.sidebar a,.sidebar button,.sidebar .nav-item{
+  color:#3c4658!important;
+}
+
+.sidebar a:hover,.sidebar button:hover,.sidebar .nav-item:hover{
+  background:linear-gradient(90deg,#f1eaff,#eef6ff)!important;
+  color:#5b21b6!important;
+}
+
+.sidebar .active,.sidebar a.active,.sidebar .nav-item.active{
+  background:linear-gradient(135deg,#7c3aed,#5b21b6)!important;
+  color:#fff!important;
+  box-shadow:0 8px 20px rgba(124,58,237,.25)!important;
+}
+
+.main-content,.page-content,.content-area,main{
+  color:var(--ff-text)!important;
+}
+
+.metric-card,.panel,.local-note,.local-summary,.accounts-empty,.modal-card,.filters,.calendar,.card,.stat-card,.finance-card,.goal-card,.account-card{
+  background:rgba(255,255,255,.96)!important;
+  border:1px solid #e7e9f2!important;
+  box-shadow:0 8px 28px rgba(31,41,55,.07)!important;
+  color:var(--ff-text)!important;
+}
+
+.metric-card:hover,.panel:hover,.card:hover,.stat-card:hover,.finance-card:hover,.goal-card:hover,.account-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 14px 34px rgba(31,41,55,.10)!important;
+  border-color:#d9d4ff!important;
+}
+
+.stack>div{
+  background:#fff!important;
+  border:1px solid #e7e9f2!important;
+}
+
+.stack>div:hover{
+  background:#faf9ff!important;
+}
+
+input,select,textarea{
+  background:#fff!important;
+  color:#172033!important;
+  border:1px solid #dfe3ec!important;
+  box-shadow:inset 0 1px 2px rgba(31,41,55,.03)!important;
+}
+
+input:focus,select:focus,textarea:focus{
+  border-color:#8b5cf6!important;
+  box-shadow:0 0 0 3px rgba(124,58,237,.12)!important;
+}
+
+button.primary,.primary{
+  background:linear-gradient(135deg,#7c3aed,#5b21b6)!important;
+  box-shadow:0 8px 20px rgba(124,58,237,.24)!important;
+}
+
+button.primary:hover,.primary:hover{
+  filter:brightness(1.06);
+  transform:translateY(-1px);
+}
+
+.secondary,.toolbar button:not(.primary){
+  background:#fff!important;
+  color:#475467!important;
+  border:1px solid #dfe3ec!important;
+}
+
+.balance-hero{
+  background:
+    radial-gradient(circle at 88% 10%,rgba(22,131,255,.28),transparent 22%),
+    radial-gradient(circle at 68% 90%,rgba(124,58,237,.25),transparent 32%),
+    linear-gradient(135deg,#6d28d9,#7c3aed 48%,#1683ff)!important;
+  color:#fff!important;
+  box-shadow:0 14px 35px rgba(91,33,182,.22)!important;
+}
+
+.local-note{
+  background:linear-gradient(90deg,#f6f0ff,#eff8ff)!important;
+  border-color:#e1d7ff!important;
+}
+
+.badge,.status,.pill{
+  border-radius:999px!important;
+}
+
+.mobile-nav{
+  background:rgba(255,255,255,.97)!important;
+  border-top:1px solid #e7e9f2!important;
+  box-shadow:0 -8px 24px rgba(31,41,55,.08)!important;
+}
+
+h1,h2,h3,h4,strong{
+  color:#172033!important;
+}
+
+.muted,.subtitle,.helper,.text-muted{
+  color:#697386!important;
+}
+
+/* Cores vibrantes dos destaques */
+.income,.receita,.positive,.success{color:#16b364!important}
+.expense,.despesa,.negative,.danger{color:#f04438!important}
+.warning,.orange{color:#f79009!important}
+.info,.blue{color:#1683ff!important}
+.purple,.accent{color:#7c3aed!important}
+
+/* Scrollbar mais discreta */
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:#f1f3f8}
+::-webkit-scrollbar-thumb{background:#c8ceda;border-radius:20px}
+::-webkit-scrollbar-thumb:hover{background:#aeb6c5}
