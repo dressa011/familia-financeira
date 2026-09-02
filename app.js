@@ -143,11 +143,27 @@ async function loadAll(){
   $('#transactions').innerHTML=tx.map(txRowFull).join('')||'<div class="empty">Nenhum lançamento cadastrado. Clique em “＋ Lançamento” para adicionar.</div>';
   $('#activity').innerHTML=logs.map(x=>`<div class="row"><div><b>${esc(x.profiles?.full_name||'Usuário')}</b><small>${esc(x.action)} · ${esc(x.entity_type||'')}</small></div><small>${fmtDateTime(x.created_at)}</small></div>`).join('')||'<div class="empty">Nenhuma atividade.</div>';
   renderCalendar(tx);
+  renderDashboardExtras(tx);
   applyTxFilter();
   } catch (err) {
     console.error('loadAll:', err);
     setDataError('Erro ao carregar o painel: '+(err?.message||err));
   }
+}
+function renderDashboardExtras(tx){
+  const currentMonth=todayISO().slice(0,7);
+  const pending=tx.filter(x=>x.type==='expense'&&effectiveStatus(x)!=='paid'&&monthOf(x)===currentMonth)
+    .sort((a,b)=>(a.due_date||'9999').localeCompare(b.due_date||'9999'));
+  const payTotal=pending.reduce((s,x)=>s+Number(x.amount||0),0);
+  const payTotalEl=$('#dashboardPayTotal'); if(payTotalEl) payTotalEl.textContent=money(payTotal);
+  const payList=$('#dashboardPayList');
+  if(payList) payList.innerHTML=pending.slice(0,4).map(x=>`<div class="dashboard-mini-row"><div><b>${esc(x.description)}</b><small>${dateBR(x.due_date)} · ${statusLabel(effectiveStatus(x))}</small></div><strong class="mini-negative">- ${money(x.amount)}</strong></div>`).join('')||'<div class="dashboard-empty">Nenhuma despesa pendente 🎉</div>';
+
+  const investments=(allAccounts||[]).filter(a=>a.kind==='investimento');
+  const investTotal=investments.reduce((s,a)=>s+Number(a.balance||0),0);
+  const investTotalEl=$('#dashboardInvestTotal'); if(investTotalEl) investTotalEl.textContent=money(investTotal);
+  const investList=$('#dashboardInvestList');
+  if(investList) investList.innerHTML=investments.slice(0,4).map(a=>`<div class="dashboard-mini-row"><div><b>${esc(a.name)}</b><small>Investimento</small></div><strong class="mini-positive">${money(a.balance)}</strong></div>`).join('')||'<div class="dashboard-empty">Nenhum investimento cadastrado.</div>';
 }
 function setDataError(message){
   const ids=['transactions','calendarList','recentTransactions','upcoming'];
