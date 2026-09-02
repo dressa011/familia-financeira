@@ -30,11 +30,14 @@
       <button data-view="calendar"><span>□</span> Calendário</button>
       <button data-view="goals"><span>◎</span> Metas</button>
       <button data-view="report"><span>▣</span> Relatório Completo</button>
+      <button data-view="accounts"><span>▤</span> Contas</button>
+      <button data-view="cards"><span>▭</span> Cartões</button>
+      <button data-view="recurrences"><span>↻</span> Recorrências</button>
       <button data-view="profile"><span>♙</span> Perfil</button>
     </nav>
     <div class="sidebar-label lower">CONTA</div>
     <button id="logoutSide" class="side-logout"><span>↪</span> Sair</button>
-    <div class="sidebar-footer">Família Financeira<br><span>Versão 2.1</span></div>
+    <div class="sidebar-footer">Família Financeira<br><span>Versão 2.2</span></div>
   </aside>
 
   <div class="app-shell">
@@ -58,7 +61,7 @@
         </section>
 
         <div class="dashboard-grid">
-          <section class="panel balance-hero"><div class="hero-copy"><span>SALDO FAMILIAR</span><strong id="heroBalance">R$ 0,00</strong><small id="heroSub">Saldo realizado: receitas recebidas − despesas pagas</small><div class="projected-line">Saldo projetado: <b id="projectedBalance">R$ 0,00</b></div><button class="hero-button" data-view="finances">Ver detalhes das contas <span>→</span></button></div><div class="hero-art"><div class="mini-bars"><i></i><i></i><i></i><i></i><i></i></div><div class="credit-card-art"><span>FF</span><b>•••• 1234</b></div></div></section>
+          <section class="panel balance-hero"><div class="hero-copy"><span>SALDO FAMILIAR</span><strong id="heroBalance">R$ 0,00</strong><small id="heroSub">Saldo realizado: receitas recebidas − despesas pagas</small><div class="projected-line">Saldo projetado: <b id="projectedBalance">R$ 0,00</b></div><button class="hero-button" data-view="accounts">Ver detalhes das contas <span>→</span></button></div><div class="hero-art"><div class="mini-bars"><i></i><i></i><i></i><i></i><i></i></div><div class="credit-card-art"><span>FF</span><b>•••• 1234</b></div></div></section>
           <section class="panel side-panel"><div class="panel-title"><div><span class="eyebrow">AGENDA</span><h3>Próximos pagamentos</h3></div><span>Ver todos</span></div><div id="upcoming" class="stack"></div></section>
           <section class="panel chart-panel"><div class="panel-title"><div><span class="eyebrow">MOVIMENTO</span><h3>Receitas × despesas</h3></div><span id="chartMonth">Este mês</span></div><div class="chart-wrap"><div class="chart-y"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div><div class="chart-area"><div class="grid-lines"><i></i><i></i><i></i><i></i><i></i></div><div class="chart-bars"><div class="chart-col"><i id="incomeBar"></i><span>Receitas</span></div><div class="chart-col"><i id="expenseBar"></i><span>Despesas</span></div></div></div></div><div class="chart-footer"><div><small>Total receitas</small><b id="chartIncome">R$ 0,00</b></div><div class="economy-ring" id="economyRing"><span id="economyPct">0%</span><small>economia</small></div><div class="right"><small>Total despesas</small><b id="chartExpense">R$ 0,00</b></div></div></section>
           <section class="panel goals-panel"><div class="panel-title"><div><span class="eyebrow">PLANEJAMENTO</span><h3>Metas em andamento</h3></div><button data-view="goals" class="link-btn">Ver todas</button></div><div id="goals" class="stack"></div></section>
@@ -75,6 +78,22 @@
 </div><div id="transactions" class="stack"></div></section></section>
       <section id="view-calendar" class="view hidden"><div class="toolbar"><div><h1>Calendário</h1><span class="muted">Vencimentos e compromissos</span></div><div class="calendar-tools"><button class="secondary" id="prevMonth">‹</button><span id="calendarMonth" class="month-pill"></span><button class="secondary" id="nextMonth">›</button></div></div><section class="panel"><div id="calendar" class="calendar"></div><div id="calendarList" class="stack"></div></section></section>
       <section id="view-goals" class="view hidden"><div class="toolbar"><div><h1>Metas</h1><span class="muted">Planeje os próximos objetivos</span></div><button class="primary quick-btn" data-open="goal">＋ Nova meta</button></div><section class="panel"><div id="goalsFull" class="stack"></div></section></section>
+      <section id="view-accounts" class="view hidden">
+        <div class="toolbar"><div><h1>Contas</h1><span class="muted">Organize saldos e carteiras neste dispositivo</span></div><button class="primary quick-btn" data-open="account">＋ Nova conta</button></div>
+        <div class="local-note">🔒 <b>Sem alterar o Supabase:</b> contas, cartões e recorrências desta área são salvos somente neste navegador. Seus lançamentos oficiais continuam no Supabase.</div>
+        <section class="local-summary-grid"><article class="local-summary"><span>SALDO DAS CONTAS</span><b id="accountsTotal">R$ 0,00</b></article><article class="local-summary"><span>LIMITE DOS CARTÕES</span><b id="cardsLimitTotal">R$ 0,00</b></article><article class="local-summary"><span>FATURAS DO MÊS</span><b id="cardsBillsTotal">R$ 0,00</b></article></section>
+        <section class="panel"><div class="panel-title"><div><span class="eyebrow">CARTEIRAS</span><h3>Suas contas</h3></div><span>Local</span></div><div id="accountsList" class="local-grid"></div></section>
+      </section>
+      <section id="view-cards" class="view hidden">
+        <div class="toolbar"><div><h1>Cartões</h1><span class="muted">Limites, faturas e compras parceladas</span></div><button class="primary quick-btn" data-open="card">＋ Novo cartão</button></div>
+        <div class="local-note">💳 <b>Controle local:</b> o cadastro do cartão não modifica tabelas do Supabase. Use “Criar lançamento” para registrar uma compra também no financeiro oficial.</div>
+        <section id="cardsList" class="local-grid cards-grid"></section>
+      </section>
+      <section id="view-recurrences" class="view hidden">
+        <div class="toolbar"><div><h1>Recorrências</h1><span class="muted">Contas e receitas que se repetem</span></div><button class="primary quick-btn" data-open="recurrence">＋ Nova recorrência</button></div>
+        <div class="local-note">↻ <b>Sem tocar no banco:</b> as regras ficam neste navegador. Você decide quando gerar o próximo lançamento no Supabase.</div>
+        <section class="panel"><div class="panel-title"><div><span class="eyebrow">AUTOMAÇÕES</span><h3>Regras cadastradas</h3></div><span id="recurrenceCount">0</span></div><div id="recurrencesList" class="stack"></div></section>
+      </section>
       <section id="view-profile" class="view hidden"><div class="toolbar"><div><h1>Perfil</h1><span class="muted">Dados da sua conta</span></div></div><section class="panel profile"><div class="profile-avatar" id="profileAvatar">F</div><h3 id="profileName">—</h3><p id="profileEmail">—</p><p id="profileRole">—</p></section></section>
       <section id="view-report" class="view hidden">
         <div class="toolbar"><div><h1>Relatório Completo</h1><span class="muted">Resumo detalhado dos lançamentos da família</span></div><div class="report-toolbar-actions"><label>Mês <input type="month" id="reportMonth"></label><label>Status <select id="reportStatus"><option value="all">Todos</option><option value="paid">Pagos</option><option value="pending">Pendentes</option><option value="overdue">Atrasados</option></select></label><button type="button" class="secondary" id="reportAllBtn">Todos</button><button type="button" class="primary" id="reportPrintBtn">🖨️ Imprimir</button></div></div>
@@ -91,7 +110,7 @@
     </main>
   </div>
   <button id="quickAdd" class="fab" title="Adicionar">＋</button>
-  <nav class="mobile-nav"><button data-view="home" class="active"><span>⌂</span><small>Início</small></button><button data-view="finances"><span>◉</span><small>Finanças</small></button><button data-view="report"><span>▣</span><small>Relatório</small></button><button id="mobileAdd"><b>＋</b></button><button data-view="goals"><span>◎</span><small>Metas</small></button><button data-view="profile"><span>♙</span><small>Perfil</small></button></nav>
+  <nav class="mobile-nav"><button data-view="home" class="active"><span>⌂</span><small>Início</small></button><button data-view="finances"><span>◉</span><small>Finanças</small></button><button data-view="accounts"><span>▤</span><small>Contas</small></button><button id="mobileAdd"><b>＋</b></button><button data-view="cards"><span>▭</span><small>Cartões</small></button><button id="mobileMore"><span>☰</span><small>Mais</small></button></nav>
 </div>
 <div id="modal" class="modal hidden"><div class="modal-card"><button id="closeModal" class="modal-close">×</button><div id="modalContent"></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="app.js"></script>
