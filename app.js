@@ -170,9 +170,53 @@ function setDataError(message){
   ids.forEach(id=>{const el=$('#'+id); if(el && !el.dataset.hasDataError){el.innerHTML='<div class="empty error-empty">'+esc(message)+'</div>';}});
 }
 
+
+function smartIcon(text, fallback='•'){
+  const v=String(text||'').toLowerCase();
+  if(/mercad|supermerc|feira|compras/.test(v)) return '🛒';
+  if(/remed|farmác|farmac|saúde|consulta|médic|medic/.test(v)) return '💊';
+  if(/dent|odont/.test(v)) return '🦷';
+  if(/internet|wifi|wi-fi|telefone|celular/.test(v)) return '📶';
+  if(/aluguel|aluga|casa|condom/.test(v)) return '🏠';
+  if(/escola|faculdade|curso|estud|mensalidade/.test(v)) return '🎓';
+  if(/luz|energia|elétr/.test(v)) return '💡';
+  if(/água|agua/.test(v)) return '💧';
+  if(/gas|gás|botijão|botijao/.test(v)) return '🔥';
+  if(/combust|gasolina|posto|uber|99|transporte/.test(v)) return '🚗';
+  if(/salário|salario|pagamento|receita/.test(v)) return '💰';
+  if(/livro|livraria/.test(v)) return '📚';
+  if(/viagem|viajar|férias|ferias|passagem/.test(v)) return '✈️';
+  if(/tv|televis/.test(v)) return '📺';
+  if(/emergência|emergencia|reserva/.test(v)) return '🛡️';
+  return fallback;
+}
+function goalIcon(name){
+  const v=String(name||'').toLowerCase();
+  if(/viagem|viajar|férias|ferias|praia|turismo/.test(v)) return '✈️';
+  if(/tv|televis/.test(v)) return '📺';
+  if(/carro|moto|veículo|veiculo/.test(v)) return '🚗';
+  if(/casa|imóvel|imovel/.test(v)) return '🏠';
+  if(/emergência|emergencia|reserva/.test(v)) return '🛡️';
+  if(/faculdade|curso|estudo/.test(v)) return '🎓';
+  if(/celular|iphone|telefone/.test(v)) return '📱';
+  if(/computador|notebook|pc/.test(v)) return '💻';
+  return '🎯';
+}
+function cardBrandIcon(name){
+  const v=String(name||'').toLowerCase();
+  if(v.includes('nubank')) return '<span class="card-brand-icon nubank">nu</span>';
+  if(v.includes('itau')||v.includes('itaú')) return '<span class="card-brand-icon itau">itaú</span>';
+  if(v.includes('inter')) return '<span class="card-brand-icon inter">B</span>';
+  if(v.includes('caixa')) return '<span class="card-brand-icon caixa">X</span>';
+  if(v.includes('bradesco')) return '<span class="card-brand-icon bradesco">B</span>';
+  if(v.includes('santander')) return '<span class="card-brand-icon santander">S</span>';
+  if(v.includes('shopee')) return '<span class="card-brand-icon shopee">S</span>';
+  return '<span class="card-brand-icon generic">💳</span>';
+}
+
 function txRow(x){
   const st=effectiveStatus(x);
-  return `<div class="row ${x.type==='expense'?'expense-row':''}" data-id="${esc(x.id)}"><div><b>${esc(x.description)}</b><small>${dateBR(x.due_date)} · ${statusLabel(st)} · ${categoryFor(x)}</small></div><span class="amount ${x.type}">${x.type==='expense'?'-':''}${money(x.amount)}</span></div>`
+  return `<div class="row agenda-row ${x.type==='expense'?'expense-row':''}" data-id="${esc(x.id)}"><div class="agenda-main"><span class="agenda-icon">${smartIcon(x.description,x.type==='income'?'💰':'📌')}</span><div><b>${esc(x.description)}</b><small>${dateBR(x.due_date)} · ${statusLabel(st)} · ${categoryFor(x)}</small></div></div><span class="amount ${x.type}">${x.type==='expense'?'-':''}${money(x.amount)}</span></div>`
 }
 function txRowRecent(x){
   const st=effectiveStatus(x);
@@ -188,7 +232,7 @@ function txRowFull(x){
     <div class="row-actions transaction-actions"><span class="amount ${x.type}">${isExpense?'-':''}${money(x.amount)}</span>${payBtn}<button class="edit-btn" onclick="editTx('${x.id}')">✏️ Editar</button>${pdfBtn}<button class="icon-btn" onclick="deleteTx('${x.id}')">🗑️</button></div>
   </div>`
 }
-function goalRow(g){const p=g.target_amount?Math.min(100,Number(g.current_amount)/Number(g.target_amount)*100):0;return `<div class="row"><div style="width:100%"><b>${esc(g.name)} <span class="goal-percent">${Math.round(p)}%</span></b><small>${money(g.current_amount)} de ${money(g.target_amount)}${g.deadline?' · até '+dateBR(g.deadline):''}</small><div class="progress"><span style="width:${p}%"></span></div></div></div>`}
+function goalRow(g){const p=g.target_amount?Math.min(100,Number(g.current_amount)/Number(g.target_amount)*100):0;return `<div class="row goal-row"><span class="goal-icon">${goalIcon(g.name)}</span><div style="width:100%"><b>${esc(g.name)} <span class="goal-percent">${Math.round(p)}%</span></b><small>${money(g.current_amount)} de ${money(g.target_amount)}${g.deadline?' · até '+dateBR(g.deadline):''}</small><div class="progress"><span style="width:${p}%"></span></div></div></div>`}
 function goalRowFull(g){return `<div class="goal-card">${goalRow(g)}<div class="goal-actions"><button onclick="addToGoal('${g.id}')">Adicionar valor</button><button class="danger" onclick="deleteGoal('${g.id}')">Excluir</button></div></div>`}
 function renderCalendar(tx){
   const y=calendarCursor.getFullYear(), m=calendarCursor.getMonth();
@@ -387,7 +431,7 @@ function renderLocalModules(){
    const purchases=allCardPurchases.filter(x=>x.card_id===c.id);
    const inst=allTransactions.filter(t=>t.card_id===c.id&&monthOf(t)===currentMonth);
    const bill=inst.reduce((a,t)=>a+Number(t.amount||0),0); const limit=Number(c.limit_amount||0); const avail=Math.max(0,limit-bill); const pct=limit?Math.min(100,bill/limit*100):0;
-   return `<article class="local-card credit-card"><div class="credit-top"><div><span>${esc(c.name)}</span><small class="credit-owner">Fatura atual · ${dateBR(currentMonth+'-01')}</small></div><b>💳</b></div><div class="credit-number">•••• ${esc(c.last4||'0000')}</div><div class="credit-values"><div><small>Limite</small><strong>${dbMoney(limit)}</strong></div><div><small>Fatura</small><strong>${dbMoney(bill)}</strong></div></div><div class="limit-bar"><span style="width:${pct}%"></span></div><small class="limit-help">Disponível: ${dbMoney(avail)} · Venc. dia ${esc(c.due_day||'—')}${c.close_day?' · Fecha dia '+esc(c.close_day):''}</small><div class="local-actions"><button onclick="addCardPurchase('${dbEscAttr(c.id)}')">＋ Compra</button><button onclick="openCardDetails('${dbEscAttr(c.id)}')">👁️ Detalhes</button><button onclick="editCard('${dbEscAttr(c.id)}')">✏️ Editar</button><button class="danger" onclick="deleteCard('${dbEscAttr(c.id)}')">Excluir</button></div>${inst.length?`<div class="purchase-list"><b class="purchase-title">Lançamentos da fatura</b>${inst.slice(0,8).map(v=>`<div><span>${esc(v.description)}${Number(v.installments||1)>1?` · ${v.installment_number}/${v.installments}`:''}</span><b>${dbMoney(v.amount)}</b></div>`).join('')}</div>`:'<div class="purchase-empty">Nenhuma compra nesta fatura.</div>'}</article>`;
+   return `<article class="local-card credit-card"><div class="credit-top"><div class="credit-brand"><div class="credit-brand-icon">${cardBrandIcon(c.name)}</div><div><span>${esc(c.name)}</span><small class="credit-owner">Fatura atual · ${dateBR(currentMonth+'-01')}</small></div></div><b class="card-top-symbol">✦</b></div><div class="credit-number">•••• ${esc(c.last4||'0000')}</div><div class="credit-values"><div><small>Limite</small><strong>${dbMoney(limit)}</strong></div><div><small>Fatura</small><strong>${dbMoney(bill)}</strong></div></div><div class="limit-bar"><span style="width:${pct}%"></span></div><small class="limit-help">Disponível: ${dbMoney(avail)} · Venc. dia ${esc(c.due_day||'—')}${c.close_day?' · Fecha dia '+esc(c.close_day):''}</small><div class="local-actions"><button onclick="addCardPurchase('${dbEscAttr(c.id)}')">＋ Compra</button><button onclick="openCardDetails('${dbEscAttr(c.id)}')">👁️ Detalhes</button><button onclick="editCard('${dbEscAttr(c.id)}')">✏️ Editar</button><button class="danger" onclick="deleteCard('${dbEscAttr(c.id)}')">Excluir</button></div>${inst.length?`<div class="purchase-list"><b class="purchase-title">Lançamentos da fatura</b>${inst.slice(0,8).map(v=>`<div><span>${esc(v.description)}${Number(v.installments||1)>1?` · ${v.installment_number}/${v.installments}`:''}</span><b>${dbMoney(v.amount)}</b></div>`).join('')}</div>`:'<div class="purchase-empty">Nenhuma compra nesta fatura.</div>'}</article>`;
  }).join(''):'<div class="empty">Nenhum cartão cadastrado. Cadastre um cartão para acompanhar limite, fatura e parcelas.</div>';
  const recList=$('#recurrencesList');
  if(recList) recList.innerHTML=allRecurrences.length?allRecurrences.map(r=>{const due=r.next_date&&r.next_date<=todayISO();return `<div class="row local-row"><div><b>${esc(r.description)} ${due?'<span class="due-badge">Gerar agora</span>':''}</b><small>${r.type==='income'?'Receita':'Despesa'} · ${dbMoney(r.amount)} · ${frequencyLabel(r.frequency)} · próximo: ${dateBR(r.next_date)||'—'}</small></div><div class="local-actions"><button class="generate-btn" onclick="generateRecurrence('${dbEscAttr(r.id)}')">＋ Gerar</button><button onclick="editRecurrence('${dbEscAttr(r.id)}')">✏️</button><button class="danger" onclick="deleteRecurrence('${dbEscAttr(r.id)}')">🗑️</button></div></div>`}).join(''):'<div class="empty">Nenhuma recorrência cadastrada. Exemplos: aluguel, internet, salário ou assinatura.</div>';
@@ -410,7 +454,7 @@ window.generateRecurrence=async id=>{const r=allRecurrences.find(x=>x.id===id);i
 window.editRecurrence=id=>{const x=allRecurrences.find(x=>x.id===id);if(x)openLocalEdit('recurrence',x)};
 window.deleteRecurrence=async id=>{if(!confirm('Excluir esta recorrência do banco? Os lançamentos já gerados serão mantidos.'))return;const {error}=await db.from('recurrences').delete().eq('id',id);if(error)alert(error.message);else{await loadAll();renderLocalModules();}};
 window.openAccountModal=()=>openLocalEdit('account');window.openCardModal=()=>openLocalEdit('card');window.openRecurrenceModal=()=>openLocalEdit('recurrence');
-window.openCardDetails=id=>{const c=allCards.find(x=>x.id===id);if(!c)return;const purchases=allCardPurchases.filter(x=>x.card_id===id);localModal(`Detalhes · ${esc(c.name)}`,`<div class="card-detail-summary"><b>Limite</b><strong>${dbMoney(c.limit_amount)}</strong><b>Vencimento</b><strong>Dia ${esc(c.due_day||'—')}</strong></div><div class="purchase-list light">${purchases.length?purchases.map(p=>`<div><span>${esc(p.description)} · ${p.installments}x</span><b>${dbMoney(p.amount)}</b></div>`).join(''):'<div class="empty">Nenhuma compra cadastrada.</div>'}</div>`) };
+window.openCardDetails=id=>{const c=allCards.find(x=>x.id===id);if(!c)return;const purchases=allCardPurchases.filter(x=>x.card_id===id);localModal(`Detalhes · ${esc(c.name)}`,`<div class="card-detail-summary"><b>Limite</b><strong>${dbMoney(c.limit_amount)}</strong><b>Vencimento</b><strong>Dia ${esc(c.due_day||'—')}</strong></div><div class="purchase-list light">${purchases.length?purchases.map(p=>`<div class="purchase-detail-row"><span class="purchase-detail-name"><span class="agenda-icon small">${smartIcon(p.description,'🛍️')}</span>${esc(p.description)} · ${p.installments}x</span><b>${dbMoney(p.amount)}</b></div>`).join(''):'<div class="empty">Nenhuma compra cadastrada.</div>'}</div>`) };
 
 window.mobileMore=()=>{localModal('Mais opções',`<div class="more-menu"><button onclick="closeModal();showView('calendar')">📅 Calendário</button><button onclick="closeModal();showView('goals')">🎯 Metas</button><button onclick="closeModal();showView('report')">📊 Relatório completo</button><button onclick="closeModal();showView('recurrences')">↻ Recorrências</button><button onclick="closeModal();showView('profile')">👤 Perfil</button></div>`)};
 

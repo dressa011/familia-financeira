@@ -659,3 +659,52 @@ body{background:#f7f8fc!important;color:#172033!important;background-image:radia
   .dashboard-pay-panel,.dashboard-invest-panel{min-height:190px}
   .dashboard-total-row strong{font-size:20px}
 }
+
+
+/* ===== 3.2 — Ícones inteligentes para Metas, Agenda e Cartões ===== */
+.agenda-main{display:flex;align-items:center;gap:9px;min-width:0}
+.agenda-main>div{min-width:0}
+.agenda-icon,.goal-icon{
+  width:34px;height:34px;min-width:34px;border-radius:11px;
+  display:grid;place-items:center;
+  background:linear-gradient(145deg,#f0eaff,#eef6ff);
+  border:1px solid #e5defc;
+  font-size:17px;
+  box-shadow:0 5px 14px rgba(91,33,182,.08);
+}
+.agenda-icon.small{width:27px;height:27px;min-width:27px;border-radius:9px;font-size:14px;display:inline-grid;vertical-align:middle;margin-right:7px}
+.goal-row{align-items:center!important;gap:10px}
+.goal-icon{
+  background:linear-gradient(145deg,#f4eaff,#edf5ff);
+  font-size:19px;
+}
+.goal-row>div{min-width:0}
+.side-panel .row>div:first-child:before{display:none!important}
+.side-panel .row b,.side-panel .row small{margin-left:0!important}
+
+.credit-brand{display:flex;align-items:center;gap:10px}
+.credit-brand-icon{
+  width:42px;height:42px;border-radius:13px;display:grid;place-items:center;
+  background:linear-gradient(145deg,#f3efff,#eaf3ff);
+  border:1px solid #e3def5;
+}
+.card-brand-icon{
+  width:100%;height:100%;display:grid;place-items:center;
+  border-radius:12px;font-weight:950;font-size:14px;font-style:normal;
+}
+.card-brand-icon.nubank{background:linear-gradient(145deg,#7c3aed,#5b21b6);color:#fff;font-size:13px}
+.card-brand-icon.itau{background:linear-gradient(145deg,#ff8a00,#ff5f00);color:#fff;font-size:10px}
+.card-brand-icon.inter{background:linear-gradient(145deg,#ff7a00,#ff4f00);color:#fff}
+.card-brand-icon.caixa{background:linear-gradient(145deg,#1477e8,#0b55b8);color:#fff}
+.card-brand-icon.bradesco{background:linear-gradient(145deg,#d81b60,#a5003b);color:#fff}
+.card-brand-icon.santander{background:linear-gradient(145deg,#ed1c24,#b50910);color:#fff}
+.card-brand-icon.shopee{background:linear-gradient(145deg,#ff7a00,#f4511e);color:#fff}
+.card-brand-icon.generic{background:linear-gradient(145deg,#7c3aed,#1683ff);color:#fff}
+.card-top-symbol{color:#7c3aed!important;font-size:18px!important}
+.purchase-detail-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.purchase-detail-name{display:flex;align-items:center;min-width:0}
+
+@media (max-width:700px){
+  .agenda-icon,.goal-icon{width:31px;height:31px;min-width:31px}
+  .credit-brand-icon{width:38px;height:38px}
+}
