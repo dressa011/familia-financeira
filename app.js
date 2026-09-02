@@ -161,6 +161,7 @@ function renderDashboardExtras(tx){
 
   const investments=(allAccounts||[]).filter(a=>a.kind==='investimento');
   const investTotal=investments.reduce((s,a)=>s+Number(a.balance||0),0);
+  const investMetricEl=$('#investmentMetric'); if(investMetricEl) investMetricEl.textContent=money(investTotal);
   const investTotalEl=$('#dashboardInvestTotal'); if(investTotalEl) investTotalEl.textContent=money(investTotal);
   const investList=$('#dashboardInvestList');
   if(investList) investList.innerHTML=investments.slice(0,4).map(a=>`<div class="dashboard-mini-row"><div><b>${esc(a.name)}</b><small>Investimento</small></div><strong class="mini-positive">${money(a.balance)}</strong></div>`).join('')||'<div class="dashboard-empty">Nenhum investimento cadastrado.</div>';
@@ -192,7 +193,7 @@ function smartIcon(text, fallback='•'){
 }
 function goalIcon(name){
   const v=String(name||'').toLowerCase();
-  if(/viagem|viajar|férias|ferias|praia|turismo/.test(v)) return '✈️';
+  if(/viagem|viajar|férias|ferias|praia|turismo/.test(v)) return '🏝️';
   if(/tv|televis/.test(v)) return '📺';
   if(/carro|moto|veículo|veiculo/.test(v)) return '🚗';
   if(/casa|imóvel|imovel/.test(v)) return '🏠';

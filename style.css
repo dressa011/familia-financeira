@@ -708,3 +708,34 @@ body{background:#f7f8fc!important;color:#172033!important;background-image:radia
   .agenda-icon,.goal-icon{width:31px;height:31px;min-width:31px}
   .credit-brand-icon{width:38px;height:38px}
 }
+
+
+/* ===== 3.3 — Acabamento final: branco elegante + cores vibrantes ===== */
+:root{--ff-violet:#6d28d9;--ff-violet2:#9333ea;--ff-blue:#1683ff;--ff-cyan:#06b6d4;--ff-green:#16b364;--ff-red:#f04438;--ff-orange:#f79009}
+body{background:#f8f9fd!important}
+.metric-grid.premium{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.metric-card{position:relative;overflow:hidden!important;background:#fff!important;border:1px solid #e8eaf2!important;box-shadow:0 8px 24px rgba(90,74,130,.07)!important}
+.metric-card:after{content:"";position:absolute;right:-24px;bottom:-30px;width:100px;height:100px;border-radius:50%;opacity:.11;pointer-events:none}
+.income-card:after{background:#16b364}.expense-card:after{background:#f04438}.balance-card:after{background:#1683ff}.goal-count-card:after{background:#7c3aed}.financing-card:after{background:#1683ff}.pending-card:after{background:#f79009}.receivable-card:after{background:#06b6d4}.investment-card:after{background:#7c3aed}
+.investment-card{--accent:#7c3aed!important}.investment-card .metric-icon{background:#f1eaff!important;color:#7c3aed!important}.investment-card>b{color:#7c3aed!important}
+.pending-card .metric-icon{background:#fff0d9!important;color:#f79009!important}.pending-card>b{color:#f79009!important}
+.receivable-card .metric-icon{background:#e9faff!important;color:#06b6d4!important}.receivable-card>b{color:#06b6d4!important}
+.financing-card .metric-icon{background:#eaf3ff!important;color:#1683ff!important}.financing-card>b{color:#1683ff!important}
+.goal-count-card .metric-icon{background:#f2eaff!important;color:#7c3aed!important}.goal-count-card>b{color:#7c3aed!important}
+.metric-head .metric-icon{box-shadow:none!important;border:1px solid rgba(0,0,0,.035)!important}
+.dashboard-grid .panel:not(.balance-hero),.panel{box-shadow:0 8px 24px rgba(90,74,130,.055)!important}
+.dashboard-grid .panel:not(.balance-hero):hover,.metric-card:hover,.local-grid>*:hover{box-shadow:0 12px 28px rgba(90,74,130,.08)!important;border-color:#ded7f5!important}
+.balance-hero{box-shadow:0 12px 30px rgba(92,55,180,.15)!important}
+.analysis-box{background:linear-gradient(135deg,#6d28d9,#9333ea 55%,#1683ff)!important}
+.dashboard-pay-panel{border-top:4px solid #f79009!important}.dashboard-invest-panel{border-top:4px solid #7c3aed!important}
+.dashboard-pay-panel .panel-title .eyebrow{color:#f79009!important}.dashboard-invest-panel .panel-title .eyebrow{color:#7c3aed!important}
+.dashboard-pay-panel .dashboard-mini-row:before{content:'💳';width:29px;height:29px;display:grid;place-items:center;border-radius:9px;background:#fff2dc;margin-right:7px;font-size:14px}
+.dashboard-invest-panel .dashboard-mini-row:before{content:'📈';width:29px;height:29px;display:grid;place-items:center;border-radius:9px;background:#f1eaff;margin-right:7px;font-size:14px}
+.dashboard-mini-row{padding:8px 0!important}.dashboard-mini-row>div{flex:1;min-width:0}
+.dashboard-pay-panel .dashboard-mini-row,.dashboard-invest-panel .dashboard-mini-row{display:flex}
+.goal-icon{background:linear-gradient(145deg,#eaf7ff,#f2eaff)!important;border-color:#e3def5!important;box-shadow:0 4px 12px rgba(124,58,237,.08)!important}
+.agenda-icon{background:linear-gradient(145deg,#fff3dd,#eaf6ff)!important;border-color:#e8e3ef!important}
+/* Conta: inicial do banco em vez de ícone genérico */
+.account-bank-badge,.account-initial{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:950;color:#fff;background:linear-gradient(145deg,#7c3aed,#1683ff);box-shadow:0 7px 16px rgba(124,58,237,.14)}
+@media(max-width:1100px){.metric-grid.premium{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.metric-grid.premium{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}.metric-card{box-shadow:0 6px 18px rgba(90,74,130,.055)!important}.dashboard-grid .panel:not(.balance-hero),.panel{box-shadow:0 6px 18px rgba(90,74,130,.045)!important}.dashboard-pay-panel .dashboard-mini-row:before,.dashboard-invest-panel .dashboard-mini-row:before{width:26px;height:26px}}
