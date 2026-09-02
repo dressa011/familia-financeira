@@ -411,3 +411,64 @@ button:active, .primary:active, .btn:active {
   .hero-copy strong{font-size:28px!important}
   .hero-button{font-size:8px!important}
 }
+
+
+/* ===== Pagamento de fatura — sem alteração no banco ===== */
+.invoice-action {
+  margin: 12px 0 4px;
+}
+.invoice-pay-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  background: linear-gradient(135deg, #18a96b, #0f8f5a);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(24,169,107,.20);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.invoice-pay-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(24,169,107,.28);
+}
+.invoice-paid-badge {
+  display: block;
+  text-align: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(24,169,107,.10);
+  color: #128253;
+  font-weight: 800;
+}
+.invoice-pay-summary {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  background: #f5f8fc;
+}
+.invoice-pay-summary span {
+  font-size: 13px;
+  opacity: .75;
+}
+.invoice-pay-summary strong {
+  font-size: 28px;
+}
+.invoice-pay-summary small {
+  line-height: 1.45;
+  opacity: .72;
+}
+.invoice-warning {
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f6f8fb;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.invoice-confirm-btn {
+  width: 100%;
+}
