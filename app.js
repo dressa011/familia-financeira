@@ -142,6 +142,20 @@ async function loadAll(){
   $('#goalsFull').innerHTML=goals.map(goalRowFull).join('')||'<div class="empty">Nenhuma meta cadastrada.</div>';
   $('#transactions').innerHTML=tx.map(txRowFull).join('')||'<div class="empty">Nenhum lançamento cadastrado. Clique em “＋ Lançamento” para adicionar.</div>';
   $('#activity').innerHTML=logs.map(x=>`<div class="row"><div><b>${esc(x.profiles?.full_name||'Usuário')}</b><small>${esc(x.action)} · ${esc(x.entity_type||'')}</small></div><small>${fmtDateTime(x.created_at)}</small></div>`).join('')||'<div class="empty">Nenhuma atividade.</div>';
+  const dashAccounts=$('#dashboardAccounts');
+  if(dashAccounts){
+    const topAccounts=[...allAccounts].sort((a,b)=>Number(b.balance||0)-Number(a.balance||0)).slice(0,4);
+    dashAccounts.innerHTML=topAccounts.length?topAccounts.map(a=>`<div class="dashboard-mini-row"><span class="mini-round account-mini">${accountIcon(a.kind)}</span><div><b>${esc(a.name)}</b><small>${esc(accountKindLabel(a.kind))}</small></div><strong>${dbMoney(a.balance)}</strong></div>`).join(''):'<div class="empty">Nenhuma conta cadastrada.</div>';
+  }
+  const dashCards=$('#dashboardCards');
+  if(dashCards){
+    const cardRows=allCards.slice(0,3).map(c=>{
+      const bill=allTransactions.filter(t=>t.card_id===c.id && t.type==='expense' && monthOf(t)===currentMonth && effectiveStatus(t)!=='paid').reduce((sum,t)=>sum+Number(t.amount||0),0);
+      const limit=Number(c.limit_amount||0); const used=Math.min(limit,Math.max(0,bill)); const avail=Math.max(0,limit-used);
+      return `<div class="dashboard-card-mini"><div class="dashboard-mini-card-top"><span class="mini-round card-mini">💳</span><div><b>${esc(c.name)}</b><small>•••• ${esc(c.last4||'0000')}</small></div><strong>${dbMoney(bill)}</strong></div><div class="mini-limit"><span style="width:${limit?Math.min(100,(used/limit)*100):0}%"></span></div><small>Disponível ${dbMoney(avail)} · vence dia ${esc(c.due_day||'—')}</small></div>`;
+    });
+    dashCards.innerHTML=cardRows.length?cardRows.join(''):'<div class="empty">Nenhum cartão cadastrado.</div>';
+  }
   renderCalendar(tx);
   applyTxFilter();
   } catch (err) {
@@ -369,13 +383,9 @@ function renderLocalModules(){
  const cardsList=$('#cardsList');
  if(cardsList) cardsList.innerHTML=allCards.length?allCards.map(c=>{
    const purchases=allCardPurchases.filter(x=>x.card_id===c.id);
-   const inst=allTransactions.filter(t=>t.card_id===c.id&&monthOf(t)===currentMonth&&t.type==='expense');
-   const openInst=inst.filter(t=>effectiveStatus(t)!=='paid');
-   const bill=openInst.reduce((a,t)=>a+Number(t.amount||0),0);
-   const paidBill=inst.filter(t=>effectiveStatus(t)==='paid').reduce((a,t)=>a+Number(t.amount||0),0);
-   const limit=Number(c.limit_amount||0); const avail=Math.max(0,limit-bill); const pct=limit?Math.min(100,bill/limit*100):0;
-   const payInvoiceBtn=bill>0?`<button class="invoice-pay-btn" onclick="payCardInvoice('${dbEscAttr(c.id)}')">💰 Pagar fatura · ${dbMoney(bill)}</button>`:`<span class="invoice-paid-badge">✓ Fatura paga</span>`;
-   return `<article class="local-card credit-card"><div class="credit-top"><div><span>${esc(c.name)}</span><small class="credit-owner">Fatura atual · ${dateBR(currentMonth+'-01')}</small></div><b>💳</b></div><div class="credit-number">•••• ${esc(c.last4||'0000')}</div><div class="credit-values"><div><small>Limite</small><strong>${dbMoney(limit)}</strong></div><div><small>Fatura em aberto</small><strong>${dbMoney(bill)}</strong></div></div><div class="limit-bar"><span style="width:${pct}%"></span></div><small class="limit-help">Disponível: ${dbMoney(avail)} · Venc. dia ${esc(c.due_day||'—')}${c.close_day?' · Fecha dia '+esc(c.close_day):''}</small><div class="invoice-action">${payInvoiceBtn}</div><div class="local-actions"><button onclick="addCardPurchase('${dbEscAttr(c.id)}')">＋ Compra</button><button onclick="openCardDetails('${dbEscAttr(c.id)}')">👁️ Detalhes</button><button onclick="editCard('${dbEscAttr(c.id)}')">✏️ Editar</button><button class="danger" onclick="deleteCard('${dbEscAttr(c.id)}')">Excluir</button></div>${inst.length?`<div class="purchase-list"><b class="purchase-title">Lançamentos da fatura</b>${inst.slice(0,8).map(v=>`<div><span>${esc(v.description)}${Number(v.installments||1)>1?` · ${v.installment_number}/${v.installments}`:''}${effectiveStatus(v)==='paid'?' · ✓ paga':''}</span><b>${dbMoney(v.amount)}</b></div>`).join('')}</div>`:'<div class="purchase-empty">Nenhuma compra nesta fatura.</div>'}</article>`;
+   const inst=allTransactions.filter(t=>t.card_id===c.id&&monthOf(t)===currentMonth);
+   const bill=inst.reduce((a,t)=>a+Number(t.amount||0),0); const limit=Number(c.limit_amount||0); const avail=Math.max(0,limit-bill); const pct=limit?Math.min(100,bill/limit*100):0;
+   return `<article class="local-card credit-card"><div class="credit-top"><div><span>${esc(c.name)}</span><small class="credit-owner">Fatura atual · ${dateBR(currentMonth+'-01')}</small></div><b>💳</b></div><div class="credit-number">•••• ${esc(c.last4||'0000')}</div><div class="credit-values"><div><small>Limite</small><strong>${dbMoney(limit)}</strong></div><div><small>Fatura</small><strong>${dbMoney(bill)}</strong></div></div><div class="limit-bar"><span style="width:${pct}%"></span></div><small class="limit-help">Disponível: ${dbMoney(avail)} · Venc. dia ${esc(c.due_day||'—')}${c.close_day?' · Fecha dia '+esc(c.close_day):''}</small><div class="local-actions"><button onclick="addCardPurchase('${dbEscAttr(c.id)}')">＋ Compra</button><button onclick="openCardDetails('${dbEscAttr(c.id)}')">👁️ Detalhes</button><button onclick="editCard('${dbEscAttr(c.id)}')">✏️ Editar</button><button class="danger" onclick="deleteCard('${dbEscAttr(c.id)}')">Excluir</button></div>${inst.length?`<div class="purchase-list"><b class="purchase-title">Lançamentos da fatura</b>${inst.slice(0,8).map(v=>`<div><span>${esc(v.description)}${Number(v.installments||1)>1?` · ${v.installment_number}/${v.installments}`:''}</span><b>${dbMoney(v.amount)}</b></div>`).join('')}</div>`:'<div class="purchase-empty">Nenhuma compra nesta fatura.</div>'}</article>`;
  }).join(''):'<div class="empty">Nenhum cartão cadastrado. Cadastre um cartão para acompanhar limite, fatura e parcelas.</div>';
  const recList=$('#recurrencesList');
  if(recList) recList.innerHTML=allRecurrences.length?allRecurrences.map(r=>{const due=r.next_date&&r.next_date<=todayISO();return `<div class="row local-row"><div><b>${esc(r.description)} ${due?'<span class="due-badge">Gerar agora</span>':''}</b><small>${r.type==='income'?'Receita':'Despesa'} · ${dbMoney(r.amount)} · ${frequencyLabel(r.frequency)} · próximo: ${dateBR(r.next_date)||'—'}</small></div><div class="local-actions"><button class="generate-btn" onclick="generateRecurrence('${dbEscAttr(r.id)}')">＋ Gerar</button><button onclick="editRecurrence('${dbEscAttr(r.id)}')">✏️</button><button class="danger" onclick="deleteRecurrence('${dbEscAttr(r.id)}')">🗑️</button></div></div>`}).join(''):'<div class="empty">Nenhuma recorrência cadastrada. Exemplos: aluguel, internet, salário ou assinatura.</div>';
@@ -392,41 +402,6 @@ window.editAccount=id=>{const x=allAccounts.find(x=>x.id===id);if(x)openLocalEdi
 window.deleteAccount=async id=>{if(!confirm('Excluir esta conta do banco?'))return;const {error}=await db.from('accounts').delete().eq('id',id);if(error)alert(error.message);else{await loadAll();renderLocalModules();}};
 window.editCard=id=>{const x=allCards.find(x=>x.id===id);if(x)openLocalEdit('card',x)};
 window.deleteCard=async id=>{if(!confirm('Excluir este cartão e suas compras do banco?'))return;const {error}=await db.from('cards').delete().eq('id',id);if(error)alert(error.message);else{await loadAll();renderLocalModules();}};
-
-window.payCardInvoice=async cardId=>{
-  const card=allCards.find(c=>c.id===cardId);
-  if(!card)return;
-  const currentMonth=todayISO().slice(0,7);
-  const openTx=allTransactions.filter(t=>t.card_id===cardId&&t.type==='expense'&&monthOf(t)===currentMonth&&effectiveStatus(t)!=='paid');
-  const total=openTx.reduce((s,t)=>s+Number(t.amount||0),0);
-  if(!total){alert('Esta fatura já está paga ou não possui lançamentos em aberto.');return;}
-  if(!allAccounts.length){alert('Cadastre uma conta primeiro para pagar a fatura.');return;}
-  localModal(`Pagar fatura · ${esc(card.name)}`,`<div class="invoice-pay-summary"><span>Fatura em aberto</span><strong>${dbMoney(total)}</strong><small>As compras desta fatura serão marcadas como pagas e o valor sairá da conta escolhida.</small></div><form id="payInvoiceForm"><label>Conta para o pagamento</label><select name="account_id" required>${allAccounts.map(a=>`<option value="${dbEscAttr(a.id)}">${esc(a.name)} · ${dbMoney(a.balance)}</option>`).join('')}</select><div class="invoice-warning">💡 O pagamento não cria uma nova despesa. Ele apenas quita as compras do cartão e reduz o saldo da conta.</div><button class="primary invoice-confirm-btn">Confirmar pagamento · ${dbMoney(total)}</button></form>`);
-  $('#payInvoiceForm').onsubmit=async e=>{
-    e.preventDefault();
-    const accountId=new FormData(e.target).get('account_id');
-    const account=allAccounts.find(a=>a.id===accountId);
-    if(!account){alert('Selecione uma conta válida.');return;}
-    const currentBalance=Number(account.balance||0);
-    if(currentBalance<total){
-      if(!confirm(`A conta selecionada tem ${dbMoney(currentBalance)} e a fatura é ${dbMoney(total)}. Deseja continuar mesmo assim?`))return;
-    }
-    const newBalance=Number((currentBalance-total).toFixed(2));
-    const balanceUpdate=await db.from('accounts').update({balance:newBalance,updated_at:new Date().toISOString()}).eq('id',accountId);
-    if(balanceUpdate.error){alert('Não foi possível atualizar o saldo da conta: '+balanceUpdate.error.message);return;}
-    const ids=openTx.map(t=>t.id);
-    const txUpdate=await db.from('transactions').update({status:'paid',paid_at:new Date().toISOString(),account_id:accountId,updated_at:new Date().toISOString()}).in('id',ids);
-    if(txUpdate.error){
-      await db.from('accounts').update({balance:currentBalance,updated_at:new Date().toISOString()}).eq('id',accountId);
-      alert('Não foi possível quitar a fatura. O saldo da conta foi restaurado. '+txUpdate.error.message);
-      return;
-    }
-    closeModal();
-    await loadAll();
-    renderLocalModules();
-    alert(`Fatura de ${dbMoney(total)} paga com sucesso!`);
-  };
-};
 window.addCardPurchase=async id=>{const c=allCards.find(x=>x.id===id);if(!c)return;localModal('Nova compra no cartão',`<form id="purchaseForm"><label>Descrição</label><input name="description" required placeholder="Ex.: Mercado"><label>Valor total da compra</label><input name="amount" type="number" step="0.01" min="0.01" required><label>Data da compra</label><input name="date" type="date" value="${todayISO()}"><label>Parcelas</label><input name="installments" type="number" min="1" max="60" value="1"><div class="installment-preview" id="installmentPreview">1x de R$ 0,00</div><p class="form-note">A compra será salva no Supabase e cada parcela será criada no financeiro.</p><button class="primary">Adicionar compra</button></form>`);const updateInstallmentPreview=()=>{const total=Number($('#purchaseForm [name=amount]')?.value||0),n=Math.max(1,Number($('#purchaseForm [name=installments]')?.value||1));$('#installmentPreview').textContent=`${n}x de ${dbMoney(total/n)}`};$('#purchaseForm [name=amount]')?.addEventListener('input',updateInstallmentPreview);$('#purchaseForm [name=installments]')?.addEventListener('input',updateInstallmentPreview);updateInstallmentPreview();$('#purchaseForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target),total=Number(f.get('amount')),n=Math.max(1,Number(f.get('installments')||1)),date=f.get('date')||todayISO(),part=Number((total/n).toFixed(2));const purchase={card_id:id,description:f.get('description'),amount:total,purchase_date:date,installments:n,installment_amount:part,created_by:me.id};const {data:cp,error:cpError}=await db.from('card_purchases').insert(purchase).select().single();if(cpError){alert('Não foi possível salvar a compra: '+cpError.message);return;}const rows=[];let remaining=total;for(let i=1;i<=n;i++){const value=i===n?Number(remaining.toFixed(2)):part;remaining-=value;rows.push({type:'expense',description:`${purchase.description}${n>1?` (${i}/${n})`:''}`,amount:value,due_date:addMonthsISO(date,i-1,c.due_day),status:'pending',created_by:me.id,responsible_profile_id:me.id,card_id:id,card_purchase_id:cp.id,installment_number:i,installments:n});}const {error:txError}=await db.from('transactions').insert(rows);if(txError){await db.from('card_purchases').delete().eq('id',cp.id);alert('A compra foi revertida porque as parcelas não puderam ser criadas: '+txError.message);return;}closeModal();await loadAll();renderLocalModules();}};
 window.generateCardTx=async id=>{};
 window.generateRecurrence=async id=>{const r=allRecurrences.find(x=>x.id===id);if(!r)return;if(!confirm(`Gerar ${r.type==='income'?'a receita':'a despesa'} “${r.description}” de ${dbMoney(r.amount)} no financeiro?`))return;const payload={type:r.type,description:r.description,amount:Number(r.amount),due_date:r.next_date||todayISO(),status:'pending',created_by:me.id,responsible_profile_id:me.id,recurrence_id:r.id};const {error}=await db.from('transactions').insert(payload);if(error){alert('Não foi possível gerar o lançamento: '+error.message);return;}const next=r.frequency==='weekly'?addMonthsISO(r.next_date||todayISO(),0):r.frequency==='yearly'?addMonthsISO(r.next_date||todayISO(),12):addMonthsISO(r.next_date||todayISO(),1);let nextDate=next;if(r.frequency==='weekly'){const d=new Date(`${r.next_date||todayISO()}T12:00:00`);d.setDate(d.getDate()+7);nextDate=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}const {error:updateError}=await db.from('recurrences').update({next_date:nextDate}).eq('id',r.id);if(updateError){alert('Lançamento criado, mas não foi possível atualizar a próxima data: '+updateError.message);}await loadAll();renderLocalModules();};
