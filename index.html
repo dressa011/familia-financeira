@@ -79,7 +79,7 @@
       <section id="view-calendar" class="view hidden"><div class="toolbar"><div><h1>Calendário</h1><span class="muted">Vencimentos e compromissos</span></div><div class="calendar-tools"><button class="secondary" id="prevMonth">‹</button><span id="calendarMonth" class="month-pill"></span><button class="secondary" id="nextMonth">›</button></div></div><section class="panel"><div id="calendar" class="calendar"></div><div id="calendarList" class="stack"></div></section></section>
       <section id="view-goals" class="view hidden"><div class="toolbar"><div><h1>Metas</h1><span class="muted">Planeje os próximos objetivos</span></div><button class="primary quick-btn" data-open="goal">＋ Nova meta</button></div><section class="panel"><div id="goalsFull" class="stack"></div></section></section>
       <section id="view-accounts" class="view hidden">
-        <div class="toolbar"><div><h1>Contas</h1><span class="muted">Organize saldos e carteiras neste dispositivo</span></div><button class="primary quick-btn" data-open="account">＋ Nova conta</button></div>
+        <div class="toolbar"><div><h1>Contas</h1><span class="muted">Contas compartilhadas e sincronizadas com o Supabase</span></div><button class="primary quick-btn" data-open="account">＋ Nova conta</button></div>
         <div class="local-note accounts-safe-note"><span class="safe-note-icon">🔒</span><div><b>Área local e segura</b><small>Contas, cartões e recorrências ficam somente neste navegador. O Supabase continua intacto e os lançamentos oficiais continuam lá.</small></div></div>
         <section class="local-summary-grid accounts-summary">
           <article class="local-summary summary-balance"><div class="summary-icon">🏦</div><div><span>SALDO DAS CONTAS</span><b id="accountsTotal">R$ 0,00</b><small>Somatório das suas contas</small></div></article>
@@ -93,13 +93,13 @@
       </section>
       <section id="view-cards" class="view hidden">
         <div class="toolbar"><div><h1>Cartões</h1><span class="muted">Limites, faturas e compras parceladas</span></div><button class="primary quick-btn" data-open="card">＋ Novo cartão</button></div>
-        <div class="local-note">💳 <b>Controle local:</b> o cadastro do cartão não modifica tabelas do Supabase. Use “Criar lançamento” para registrar uma compra também no financeiro oficial.</div>
+        <div class="local-note">💳 <b>Cartão conectado:</b> cada compra é salva no Supabase e as parcelas entram automaticamente em Finanças.</div>
         <section id="cardsList" class="local-grid cards-grid"></section>
       </section>
       <section id="view-recurrences" class="view hidden">
         <div class="toolbar"><div><h1>Recorrências</h1><span class="muted">Contas e receitas que se repetem</span></div><button class="primary quick-btn" data-open="recurrence">＋ Nova recorrência</button></div>
-        <div class="local-note">↻ <b>Sem tocar no banco:</b> as regras ficam neste navegador. Você decide quando gerar o próximo lançamento no Supabase.</div>
-        <section class="panel"><div class="panel-title"><div><span class="eyebrow">AUTOMAÇÕES</span><h3>Regras cadastradas</h3></div><span><b id="recurrenceCount">0</b> · <small id="recurrenceHint">As regras ficam somente neste navegador.</small></span></div><div id="recurrencesList" class="stack"></div></section>
+        <div class="local-note">↻ <b>Automação no banco:</b> a regra fica salva no Supabase. Ao clicar em “Gerar”, um lançamento real é criado e a próxima data é atualizada.</div>
+        <section class="panel"><div class="panel-title"><div><span class="eyebrow">AUTOMAÇÕES</span><h3>Regras cadastradas</h3></div><span><b id="recurrenceCount">0</b> · <small id="recurrenceHint">As regras ficam salvas no Supabase.</small></span></div><div id="recurrencesList" class="stack"></div></section>
       </section>
       <section id="view-profile" class="view hidden"><div class="toolbar"><div><h1>Perfil</h1><span class="muted">Dados da sua conta</span></div></div><section class="panel profile"><div class="profile-avatar" id="profileAvatar">F</div><h3 id="profileName">—</h3><p id="profileEmail">—</p><p id="profileRole">—</p></section></section>
       <section id="view-report" class="view hidden">
