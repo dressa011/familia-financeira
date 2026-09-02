@@ -142,20 +142,6 @@ async function loadAll(){
   $('#goalsFull').innerHTML=goals.map(goalRowFull).join('')||'<div class="empty">Nenhuma meta cadastrada.</div>';
   $('#transactions').innerHTML=tx.map(txRowFull).join('')||'<div class="empty">Nenhum lançamento cadastrado. Clique em “＋ Lançamento” para adicionar.</div>';
   $('#activity').innerHTML=logs.map(x=>`<div class="row"><div><b>${esc(x.profiles?.full_name||'Usuário')}</b><small>${esc(x.action)} · ${esc(x.entity_type||'')}</small></div><small>${fmtDateTime(x.created_at)}</small></div>`).join('')||'<div class="empty">Nenhuma atividade.</div>';
-  const dashAccounts=$('#dashboardAccounts');
-  if(dashAccounts){
-    const topAccounts=[...allAccounts].sort((a,b)=>Number(b.balance||0)-Number(a.balance||0)).slice(0,4);
-    dashAccounts.innerHTML=topAccounts.length?topAccounts.map(a=>`<div class="dashboard-mini-row"><span class="mini-round account-mini">${accountIcon(a.kind)}</span><div><b>${esc(a.name)}</b><small>${esc(accountKindLabel(a.kind))}</small></div><strong>${dbMoney(a.balance)}</strong></div>`).join(''):'<div class="empty">Nenhuma conta cadastrada.</div>';
-  }
-  const dashCards=$('#dashboardCards');
-  if(dashCards){
-    const cardRows=allCards.slice(0,3).map(c=>{
-      const bill=allTransactions.filter(t=>t.card_id===c.id && t.type==='expense' && monthOf(t)===currentMonth && effectiveStatus(t)!=='paid').reduce((sum,t)=>sum+Number(t.amount||0),0);
-      const limit=Number(c.limit_amount||0); const used=Math.min(limit,Math.max(0,bill)); const avail=Math.max(0,limit-used);
-      return `<div class="dashboard-card-mini"><div class="dashboard-mini-card-top"><span class="mini-round card-mini">💳</span><div><b>${esc(c.name)}</b><small>•••• ${esc(c.last4||'0000')}</small></div><strong>${dbMoney(bill)}</strong></div><div class="mini-limit"><span style="width:${limit?Math.min(100,(used/limit)*100):0}%"></span></div><small>Disponível ${dbMoney(avail)} · vence dia ${esc(c.due_day||'—')}</small></div>`;
-    });
-    dashCards.innerHTML=cardRows.length?cardRows.join(''):'<div class="empty">Nenhum cartão cadastrado.</div>';
-  }
   renderCalendar(tx);
   applyTxFilter();
   } catch (err) {

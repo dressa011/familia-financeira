@@ -413,61 +413,36 @@ button:active, .primary:active, .btn:active {
 }
 
 
-/* ===== Dashboard 2.7 — visual premium ===== */
-#view-home .toolbar{margin-bottom:14px}
-#view-home .toolbar h1{font-size:25px;letter-spacing:-.04em}
-#view-home .toolbar .muted{font-size:10px}
-#view-home .metric-grid{margin-bottom:2px}
-#view-home .metric-card{position:relative;overflow:hidden;transition:transform .22s ease,box-shadow .22s ease}
-#view-home .metric-card:after{content:'';position:absolute;width:90px;height:90px;border-radius:50%;right:-38px;top:-38px;background:currentColor;opacity:.045;pointer-events:none}
-#view-home .metric-card:hover{transform:translateY(-3px);box-shadow:0 18px 38px rgba(16,48,92,.13)}
-#view-home .metric-icon{box-shadow:0 7px 18px rgba(10,91,195,.12)}
-#view-home .balance-hero{background:radial-gradient(circle at 86% 16%,rgba(72,190,255,.32),transparent 22%),radial-gradient(circle at 70% 90%,rgba(0,215,177,.16),transparent 28%),linear-gradient(135deg,#062454 0%,#0755bd 58%,#0b78ed 100%);box-shadow:0 22px 55px rgba(5,91,195,.23)}
-#view-home .hero-copy strong{font-size:43px}
-#view-home .dashboard-grid{grid-template-columns:minmax(0,1.45fr) minmax(280px,.8fr);align-items:stretch}
-#view-home .chart-panel{background:linear-gradient(180deg,#fff,#fbfdff)}
-#view-home .goals-panel{background:linear-gradient(180deg,#fff,#f9fcff)}
-.accounts-dashboard-panel,.cards-dashboard-panel{min-height:235px}
-.dashboard-mini-list{margin-top:12px}
-.dashboard-mini-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:9px;padding:11px 0;border-bottom:1px solid #edf1f6}
-.dashboard-mini-row:last-child{border-bottom:0}
-.dashboard-mini-row b,.dashboard-card-mini b{display:block;font-size:11px}
-.dashboard-mini-row small,.dashboard-card-mini small{display:block;margin-top:3px;color:#8592a5;font-size:8px}
-.dashboard-mini-row strong{font-size:11px;white-space:nowrap}
-.mini-round{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-size:15px;background:#edf5ff;color:#0967d8}
-.account-mini{background:#edf9f3;color:#12905e}
-.card-mini{background:#eef2ff;color:#5d47d8}
-.dashboard-card-mini{padding:10px 0 12px;border-bottom:1px solid #edf1f6}
-.dashboard-card-mini:last-child{border-bottom:0}
-.dashboard-mini-card-top{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:9px}
-.dashboard-mini-card-top>strong{font-size:12px;color:#e14b5d}
-.mini-limit{height:5px;background:#edf1f6;border-radius:99px;overflow:hidden;margin:8px 0 5px 43px}
-.mini-limit span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#7757ee,#0b78ed)}
-@media (min-width:761px){
-  #view-home .dashboard-grid{grid-template-columns:minmax(0,1.35fr) minmax(250px,.72fr) minmax(250px,.72fr)}
-  #view-home .balance-hero{grid-column:1 / span 2;min-height:285px}
-  #view-home .side-panel{grid-column:3;grid-row:1}
-  #view-home .chart-panel{grid-column:1 / span 2;grid-row:2}
-  #view-home .goals-panel{grid-column:3;grid-row:2}
-  #view-home .transactions-panel{grid-column:1 / span 2;grid-row:3}
-  #view-home .analysis-panel{grid-column:3;grid-row:3}
-  #view-home .accounts-dashboard-panel{grid-column:1;grid-row:4}
-  #view-home .cards-dashboard-panel{grid-column:2 / span 2;grid-row:4}
+/* ===== FAMÍLIA FINANCEIRA — TEMA BLACK NEON 2.8 ===== */
+:root{
+  --bg:#050608;--white:#0b0d11;--text:#f7f8fb;--muted:#8d96a8;--line:#202531;
+  --navy:#07090d;--navy2:#0d1118;--blue:#1683ff;--blue2:#6b35ff;--cyan:#00d9ff;
+  --green:#00f07b;--red:#ff245c;--purple:#a44cff;--orange:#ff9d00;
+  --shadow:0 12px 36px rgba(0,0,0,.42);--ff-shadow:0 16px 45px rgba(0,0,0,.5);
 }
-@media (max-width:760px){
-  #view-home .toolbar h1{font-size:21px}
-  #view-home .metric-card{min-height:106px}
-  #view-home .hero-copy strong{font-size:31px}
-  #view-home .dashboard-grid{display:flex!important;flex-direction:column!important}
-  #view-home .accounts-dashboard-panel{order:6}
-  #view-home .cards-dashboard-panel{order:7}
-  #view-home .dashboard-mini-row{padding:10px 0}
-  #view-home .dashboard-card-mini{padding:10px 0}
-  #view-home .balance-hero{min-height:220px!important}
-}
-@media (max-width:430px){
-  #view-home .metric-grid{gap:8px}
-  #view-home .metric-card{padding:12px}
-  #view-home .metric-card>b{font-size:16px}
-  #view-home .metric-head span:not(.metric-icon){font-size:8px}
+body{background:#030405;color:var(--text);background-image:radial-gradient(circle at 75% -10%,rgba(91,45,255,.13),transparent 28%),radial-gradient(circle at 20% 20%,rgba(0,195,255,.06),transparent 25%)}
+.sidebar{background:linear-gradient(180deg,#030507 0%,#070a10 100%);border-right:1px solid #171b24;box-shadow:10px 0 40px rgba(0,0,0,.35)}
+.brand .brand-mark,.brand-mark.small{background:linear-gradient(145deg,#6a20ff,#1a6dff);box-shadow:0 0 28px rgba(108,32,255,.42)}
+.brand strong{color:#a44cff}.sidebar-label{color:#5e687a}.side-nav button,.side-logout{color:#9ea8ba}.side-nav button.active{background:linear-gradient(135deg,#791cff,#3c19c8);box-shadow:0 0 25px rgba(115,28,255,.38)}.side-nav button:hover,.side-logout:hover{background:#ffffff0b;color:#fff}
+.sidebar-footer{color:#dce2ee}.sidebar-footer span{color:#687286}
+.topbar{color:#f8f9fb}.topbar p,.muted{color:#8b95a7}.icon-circle,.family-chip{background:#0b0e13;border-color:#202633;color:#dbe3ef;box-shadow:0 8px 25px #0007}.family-chip b{color:#fff}.logout-top{color:#a1aabc}.avatar{background:linear-gradient(145deg,#6a20ff,#1c74ff);box-shadow:0 0 18px rgba(105,32,255,.3)}
+.toolbar h1,.topbar h2,.panel-title h3{color:#f8f9fc}
+.metric-card,.panel,.local-note,.local-summary,.accounts-empty,.modal-card,.filters,.calendar,.login-box{background:linear-gradient(145deg,#0b0e13,#080a0e)!important;border-color:#202633!important;box-shadow:var(--ff-shadow)!important;color:#f5f7fb}
+.metric-card{position:relative;overflow:hidden}.metric-card:before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--accent,#1683ff),transparent);opacity:.9}
+.income-card{--accent:#00f07b}.expense-card{--accent:#ff245c}.balance-card{--accent:#1683ff}.goal-count-card{--accent:#a44cff}.financing-card{--accent:#ff9d00}.pending-card{--accent:#ff9d00}.receivable-card{--accent:#00d9ff}
+.metric-head{color:#8c96a8}.metric-head em{color:#687386}.metric-icon{background:#111a28;color:#1683ff;box-shadow:0 0 18px rgba(22,131,255,.14)}.income-card .metric-icon{background:#092419;color:#00f07b}.expense-card .metric-icon{background:#280914;color:#ff245c}.goal-count-card .metric-icon{background:#1c102d;color:#a44cff}.metric-card>b{color:#fff!important}.income-card>b{color:#00f07b!important}.expense-card>b{color:#ff3d6d!important}.balance-card>b{color:#42a2ff!important}.metric-card small{color:#768195}
+.balance-hero{background:radial-gradient(circle at 82% 15%,#00d9ff24,transparent 22%),radial-gradient(circle at 65% 90%,#8c2cff2d,transparent 32%),linear-gradient(135deg,#080b13,#11132b 55%,#190c35)!important;border:1px solid #402a70!important;box-shadow:0 18px 55px rgba(100,35,255,.22)!important}.hero-copy strong{color:#fff;text-shadow:0 0 28px rgba(126,62,255,.45)}.hero-button{background:linear-gradient(135deg,#8c24ff,#4b27ff);color:#fff;box-shadow:0 0 25px rgba(123,38,255,.35)}.credit-card-art{background:linear-gradient(145deg,#7625ff,#116fff);box-shadow:0 0 35px rgba(66,70,255,.35)}
+.panel-title .eyebrow,.eyebrow{color:#6f7a90}.panel-title>span:last-child,.link-btn{color:#45a4ff}.link-btn{background:transparent;border:0}.stack>div{border-color:#1d232e!important}.stack>div:hover{background:#ffffff05}
+.chart-panel .grid-lines i{border-color:#202633!important}.chart-col i{box-shadow:0 0 20px currentColor}.chart-footer b{color:#fff}.economy-ring{border-color:#00f07b!important;color:#00f07b}
+.local-badge{background:#082519!important;color:#00f07b!important}.accounts-safe-note,.local-note{color:#b8c1d0}.accounts-safe-note b,.local-note b{color:#fff}.accounts-empty{background:linear-gradient(180deg,#0b0e13,#080a0e)!important}.accounts-empty h4{color:#fff}.accounts-empty p{color:#808b9e}
+.primary{background:linear-gradient(135deg,#1683ff,#7132ff)!important;box-shadow:0 0 25px rgba(74,58,255,.3)!important}.secondary,.toolbar button:not(.primary){background:#0c1016!important;color:#dce4ef!important;border:1px solid #242b37!important}
+input,select,textarea{background:#080b10!important;color:#f4f7fb!important;border-color:#252d3a!important}.filters{color:#fff}.filters input::placeholder,.login-box input::placeholder{color:#687386}
+.mobile-nav{background:rgba(7,9,13,.9)!important;border:1px solid #242b37!important;box-shadow:0 0 30px #000b!important}.mobile-nav button{color:#8e99aa}.mobile-nav button.active{color:#fff}.mobile-nav button#mobileAdd b{background:linear-gradient(135deg,#8c24ff,#3c6fff)!important;box-shadow:0 0 25px rgba(115,36,255,.5)}
+.modal{background:rgba(0,0,0,.72)!important}.modal-card{box-shadow:0 25px 80px #000!important}
+.login-screen{background:radial-gradient(circle at 15% 15%,#7625ff33,transparent 28%),radial-gradient(circle at 85% 80%,#00d9ff1f,transparent 30%),#030405}.login-box{color:#fff}.login-box h1{color:#fff}.login-box h1 span{color:#a44cff}.login-box>p,.login-box label{color:#8993a6}.login-box input{background:#070a0f;border-color:#252d3a;color:#fff}.login-kicker{color:#7f48ff}
+.dashboard-grid .panel:not(.balance-hero):hover,.metric-card:hover,.local-grid>*:hover{border-color:#343d4d!important;box-shadow:0 20px 55px rgba(0,0,0,.6)!important}
+@keyframes neonPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.08)}}
+.metric-card:nth-child(3),.balance-hero{animation:ffCardIn .45s ease both,neonPulse 4s ease-in-out infinite}
+@media(max-width:760px){
+ body{background:#030405}.sidebar{display:none!important}.app-shell{margin:0!important;width:100%!important}.topbar{padding:15px 14px 7px}.topbar h2{font-size:20px}.topbar p{color:#778195}.app-shell main{padding:8px 12px 92px!important}.premium{grid-template-columns:repeat(2,minmax(0,1fr))!important}.metric-card{min-height:96px!important}.dashboard-grid{gap:10px!important}.dashboard-grid .panel{padding:15px!important}.balance-hero{min-height:225px!important}.panel{border-radius:19px!important}.local-grid{grid-template-columns:1fr!important}.mobile-nav{display:flex!important}
 }
