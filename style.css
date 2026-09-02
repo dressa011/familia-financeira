@@ -102,3 +102,231 @@
 @media(max-width:430px){
  .topbar{padding-left:13px;padding-right:13px}.topbar h2{font-size:18px}.topbar p{font-size:10px}.family-chip{gap:6px}.family-chip .avatar{width:31px;height:31px}.app-shell main{padding-left:10px;padding-right:10px}.toolbar .quick-btn{font-size:10px;padding:9px 10px}.metric-card{min-height:92px}.metric-card>b{font-size:15px}.metric-icon{width:27px;height:27px;font-size:14px}.local-summary-grid{grid-template-columns:1fr 1fr}.local-summary:last-child{grid-column:1/-1}.local-row .local-actions{max-width:92px;flex-basis:92px}.local-row .local-actions button{font-size:8px;padding:5px 4px}.card-detail-summary{grid-template-columns:1fr 1fr}.mobile-nav{height:62px;border-radius:18px}.mobile-nav button span{font-size:16px}.mobile-nav small{font-size:6px}
 }
+
+
+/* ===== Contas 2.2 — acabamento visual ===== */
+.accounts-safe-note{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:0 0 16px;
+  padding:13px 16px;
+  border:1px solid #d7e5f7;
+  border-radius:15px;
+  background:linear-gradient(135deg,#f8fbff,#eef6ff);
+  box-shadow:0 5px 18px rgba(16,24,40,.035);
+  color:#52657d;
+}
+.safe-note-icon{
+  width:38px;height:38px;flex:0 0 38px;
+  display:grid;place-items:center;
+  border-radius:12px;background:#fff;
+  box-shadow:0 2px 8px rgba(24,72,130,.08);
+  font-size:18px;
+}
+.accounts-safe-note b{display:block;color:#183657;font-size:12px;margin-bottom:2px}
+.accounts-safe-note small{display:block;color:#667890;font-size:10px;line-height:1.45}
+
+.accounts-summary{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  margin-bottom:16px;
+}
+.accounts-summary .local-summary{
+  min-height:94px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:16px 17px;
+  border:1px solid #e2e9f2;
+  border-radius:17px;
+  background:#fff;
+  box-shadow:0 7px 22px rgba(20,43,77,.055);
+}
+.accounts-summary .summary-icon{
+  width:42px;height:42px;flex:0 0 42px;
+  display:grid;place-items:center;
+  border-radius:13px;
+  font-size:20px;
+}
+.summary-balance .summary-icon{background:#eaf8f1}
+.summary-limit .summary-icon{background:#edf4ff}
+.summary-bill .summary-icon{background:#fff6e7}
+.accounts-summary .local-summary span{
+  display:block;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.075em;
+  color:#718096;
+}
+.accounts-summary .local-summary b{
+  display:block;
+  margin-top:5px;
+  font-size:20px;
+  line-height:1.1;
+  color:#142238;
+}
+.accounts-summary .local-summary small{
+  display:block;
+  margin-top:5px;
+  color:#8a97a9;
+  font-size:9px;
+}
+.local-badge{
+  padding:5px 9px;
+  border-radius:999px;
+  background:#eef8f3;
+  color:#18835b!important;
+  font-size:9px!important;
+  font-weight:800;
+}
+.accounts-panel{
+  padding:20px;
+}
+.accounts-panel .panel-title{
+  margin-bottom:14px;
+}
+.accounts-empty{
+  min-height:210px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:28px 20px;
+  border:1px dashed #ccd9e8;
+  border-radius:16px;
+  background:linear-gradient(180deg,#fbfdff,#f7faff);
+}
+.accounts-empty-icon{
+  width:58px;height:58px;
+  display:grid;place-items:center;
+  margin-bottom:10px;
+  border-radius:18px;
+  background:#eaf3ff;
+  font-size:27px;
+}
+.accounts-empty h4{
+  margin:0;
+  color:#193454;
+  font-size:15px;
+}
+.accounts-empty p{
+  max-width:440px;
+  margin:7px auto 15px;
+  color:#7b8799;
+  font-size:10px;
+  line-height:1.55;
+}
+.empty-add-account{
+  padding:10px 14px;
+  font-size:11px;
+}
+
+@media(max-width:760px){
+  .accounts-summary{grid-template-columns:1fr 1fr;gap:9px}
+  .accounts-summary .local-summary{min-height:82px;padding:12px}
+  .accounts-summary .summary-icon{width:35px;height:35px;flex-basis:35px;font-size:17px}
+  .accounts-summary .local-summary b{font-size:16px}
+  .accounts-summary .local-summary small{font-size:8px}
+  .accounts-safe-note{padding:11px 12px}
+  .accounts-panel{padding:14px}
+}
+@media(max-width:430px){
+  .accounts-summary{grid-template-columns:1fr}
+  .accounts-summary .local-summary{min-height:70px}
+  .accounts-summary .local-summary b{font-size:17px}
+  .accounts-safe-note small{font-size:9px}
+  .local-badge{font-size:8px!important;padding:4px 7px}
+  .accounts-empty{min-height:190px;padding:22px 14px}
+}
+
+
+/* ===== Família Financeira 2.2 — microanimações ===== */
+@keyframes ffCardIn {
+  from { opacity:0; transform:translateY(10px) scale(.985); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes ffFloat {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-3px); }
+}
+@keyframes ffShine {
+  0% { transform:translateX(-120%); }
+  55%,100% { transform:translateX(120%); }
+}
+@keyframes ffPulseSoft {
+  0%,100% { box-shadow:0 7px 22px rgba(20,43,77,.055); }
+  50% { box-shadow:0 11px 30px rgba(20,43,77,.10); }
+}
+
+/* Cards principais: entrada suave e interação */
+.accounts-summary .local-summary,
+.accounts-panel,
+.accounts-safe-note,
+.accounts-empty {
+  animation: ffCardIn .45s ease both;
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+.accounts-summary .local-summary:nth-child(2){animation-delay:.06s}
+.accounts-summary .local-summary:nth-child(3){animation-delay:.12s}
+.accounts-panel{animation-delay:.16s}
+
+.accounts-summary .local-summary:hover {
+  transform:translateY(-4px);
+  box-shadow:0 13px 32px rgba(20,43,77,.11);
+  border-color:#d6e2f0;
+}
+.accounts-summary .summary-icon {
+  transition:transform .22s ease;
+}
+.accounts-summary .local-summary:hover .summary-icon {
+  transform:scale(1.08) rotate(-2deg);
+}
+
+/* Botões com resposta visual */
+button, .primary, .btn {
+  transition:transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+button:hover, .primary:hover, .btn:hover {
+  transform:translateY(-2px);
+}
+button:active, .primary:active, .btn:active {
+  transform:translateY(0) scale(.98);
+}
+
+/* Botão de cadastrar com pequeno brilho */
+.empty-add-account {
+  position:relative;
+  overflow:hidden;
+}
+.empty-add-account::after {
+  content:"";
+  position:absolute;
+  top:0; bottom:0; width:45%;
+  left:-60%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);
+  transform:skewX(-18deg);
+}
+.empty-add-account:hover::after {
+  animation:ffShine .75s ease;
+}
+
+/* Cartões/itens locais, caso presentes */
+.local-grid > * {
+  animation:ffCardIn .4s ease both;
+}
+.local-grid > *:hover {
+  transform:translateY(-3px);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+
+/* Mantém o mobile leve */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    scroll-behavior:auto !important;
+    transition-duration:.01ms !important;
+  }
+}
