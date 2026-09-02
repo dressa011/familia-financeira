@@ -38,3 +38,49 @@
 @media (max-width:1000px){.report-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:640px){.report-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.report-toolbar-actions{width:100%}.report-toolbar-actions label{flex:1}.report-toolbar-actions input{width:100%}}
 @media print{.sidebar,.topbar,.mobile-nav,.fab,.toolbar,.report-toolbar-actions{display:none!important}.app-shell{margin:0!important}.view{display:none!important}.view#view-report{display:block!important}.report-cards{grid-template-columns:repeat(3,1fr)}body{background:#fff}.panel,.report-card{box-shadow:none}}
+
+/* Família Financeira 2.1 — melhorias sem alteração do Supabase */
+.pending-card .metric-icon{background:#fff6e8;color:#b56a00}
+.receivable-card .metric-icon{background:#eef7ff;color:#1672d8}
+.projected-line{margin-top:10px;font-size:12px;color:#d8e7ff}.projected-line b{color:#fff}
+.form-note{font-size:11px;color:#7b8799;background:#f7f9fc;border-radius:10px;padding:10px;line-height:1.45}
+.edit-btn{border:1px solid #d7dee8;background:#fff;border-radius:8px;padding:7px 10px;font-weight:650;color:#28547a}
+.edit-btn:hover{background:#f5f8fc}
+.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filters input,.filters select{height:38px;border:1px solid #d8dee8;border-radius:9px;padding:0 11px;background:#fff;color:var(--text);outline:none}
+.filters input{min-width:220px;flex:1}
+.filters input:focus,.filters select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #0a64df12}
+.tx-category{color:#7b8799}
+.calendar-tools{display:flex;align-items:center;gap:8px}
+.calendar-tools .secondary{height:38px;min-width:38px;font-size:20px;padding:0}
+.cal-day{border:1px solid #e8edf5;background:#fff;border-radius:14px;text-align:left;cursor:pointer;color:var(--text);font:inherit}
+.cal-day:hover{border-color:#a9c9f6;background:#f8fbff}
+.cal-total{display:block;margin-top:5px;font-size:8px;color:#74839a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day-details{border-top:1px solid #e6ebf2;margin-top:14px}
+.day-detail{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid #e6ebf2}
+.day-detail b,.day-detail small{display:block}.day-detail small{font-size:10px;color:#7b8799;margin-top:3px}.day-detail strong{white-space:nowrap}.day-detail strong.income{color:var(--green)}.day-detail strong.expense{color:var(--red)}
+.modal-card form{display:grid;gap:8px}.modal-card form label{font-size:12px;font-weight:800;margin-top:5px}.modal-card form input,.modal-card form select,.modal-card form textarea{width:100%;padding:11px 12px;border:1px solid #d8e0eb;border-radius:10px;outline:0;background:#fff}.modal-card form button{margin-top:8px;padding:12px}
+@media(max-width:760px){
+  .premium{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pending-card,.receivable-card{display:block}
+  .metric-card>b{font-size:16px}
+  .filters{display:grid;grid-template-columns:1fr 1fr}
+  .filters input{grid-column:1/-1;min-width:0}
+  .transaction-row{align-items:flex-start;gap:10px}
+  .transaction-actions{max-width:48%;justify-content:flex-end}
+  .transaction-actions .amount{width:100%;text-align:right}
+  .transaction-actions .pay-btn,.transaction-actions .pdf-btn,.transaction-actions .edit-btn{font-size:10px;padding:6px 7px}
+  .calendar-tools{gap:5px}.month-pill{font-size:11px}
+  .projected-line{font-size:11px}
+}
+@media(max-width:430px){
+  .premium{grid-template-columns:1fr 1fr}
+  .metric-card{padding:11px}
+  .metric-head{font-size:8px}
+  .metric-card>b{font-size:14px}
+  .filters{grid-template-columns:1fr}
+  .filters input{grid-column:auto}
+  .transaction-actions{max-width:52%}
+  .transaction-actions .edit-btn{display:inline-block}
+  .modal-card{width:calc(100% - 24px);padding:20px}
+}
