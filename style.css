@@ -330,3 +330,36 @@ button:active, .primary:active, .btn:active {
     transition-duration:.01ms !important;
   }
 }
+
+/* ===== Família Financeira 2.4 — suporte para celular ===== */
+html, body { width:100%; max-width:100%; overflow-x:hidden; }
+img, svg, canvas, video { max-width:100%; }
+@media (max-width:900px){
+  body{min-width:0!important}
+  .sidebar{width:78px!important;min-width:78px!important}
+  .sidebar .brand-text,.sidebar .nav-label,.sidebar .menu-label,.sidebar small{display:none!important}
+  .sidebar .nav-item,.sidebar button,.sidebar a{justify-content:center!important;padding-left:8px!important;padding-right:8px!important}
+  .main-content,.page-content,.content-area,main{min-width:0!important;width:100%!important;box-sizing:border-box}
+  .dashboard-grid,.cards-grid,.stats-grid,.grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .table-wrap,.table-container{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:650px}
+  input,select,textarea,button{max-width:100%}
+}
+@media (max-width:600px){
+  body{font-size:14px!important}
+  .sidebar{position:fixed!important;left:0!important;top:0!important;bottom:0!important;z-index:1000!important;width:64px!important;min-width:64px!important}
+  .main-content,.page-content,.content-area,main{margin-left:64px!important;width:calc(100% - 64px)!important;padding:12px!important;box-sizing:border-box!important}
+  header,.topbar,.page-header{gap:8px!important;flex-wrap:wrap!important}
+  .dashboard-grid,.cards-grid,.stats-grid,.grid{grid-template-columns:1fr!important;gap:10px!important}
+  .card,.stat-card,.finance-card,.goal-card,.account-card{width:100%!important;box-sizing:border-box!important}
+  .modal{width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important;margin:12px!important}
+  .modal-content{max-height:88vh!important;overflow-y:auto!important;overflow-x:hidden!important}
+  .form-grid{grid-template-columns:1fr!important}
+  .actions,.button-group,.toolbar{flex-wrap:wrap!important}
+  .actions button,.button-group button{flex:1 1 auto}
+  .hero,.balance-hero{padding:18px!important}
+  .hero h1,.balance-hero h1{font-size:24px!important}
+  .section-header{flex-wrap:wrap!important;gap:8px!important}
+  .section-header button{width:100%}
+  .empty-state{padding:28px 14px!important}
+}
