@@ -739,3 +739,102 @@ body{background:#f8f9fd!important}
 .account-bank-badge,.account-initial{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:950;color:#fff;background:linear-gradient(145deg,#7c3aed,#1683ff);box-shadow:0 7px 16px rgba(124,58,237,.14)}
 @media(max-width:1100px){.metric-grid.premium{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.metric-grid.premium{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}.metric-card{box-shadow:0 6px 18px rgba(90,74,130,.055)!important}.dashboard-grid .panel:not(.balance-hero),.panel{box-shadow:0 6px 18px rgba(90,74,130,.045)!important}.dashboard-pay-panel .dashboard-mini-row:before,.dashboard-invest-panel .dashboard-mini-row:before{width:26px;height:26px}}
+
+/* ===== 4.0 — Dashboard profissional ===== */
+:root{
+  --ff-purple-strong:#6d28d9;
+  --ff-purple:#7c3aed;
+  --ff-blue:#1683ff;
+  --ff-green:#16b364;
+  --ff-red:#f04438;
+  --ff-orange:#f79009;
+  --ff-cyan:#06b6d4;
+}
+
+/* Cabeçalho mais próximo de produto comercial */
+.topbar{padding-top:24px!important;padding-bottom:8px!important}
+.topbar h2{font-size:27px!important;letter-spacing:-.045em!important}
+.topbar p{font-size:12px!important}
+.toolbar{margin-top:7px!important;margin-bottom:16px!important}
+.toolbar h1{font-size:21px!important}
+
+/* Cards de resumo com hierarquia */
+.metric-card{min-height:138px!important;padding:17px 18px!important;border-radius:20px!important}
+.metric-head{font-size:8px!important}
+.metric-card>b{font-size:25px!important;margin-top:17px!important}
+.metric-card small{font-size:9px!important}
+.metric-card:nth-child(1){--accent:var(--ff-green)!important}
+.metric-card:nth-child(2){--accent:var(--ff-red)!important}
+.metric-card:nth-child(3){--accent:var(--ff-blue)!important}
+.metric-card:nth-child(4){--accent:var(--ff-purple)!important}
+.metric-card:nth-child(5){--accent:var(--ff-blue)!important}
+.metric-card:nth-child(6){--accent:var(--ff-orange)!important}
+.metric-card:nth-child(7){--accent:var(--ff-cyan)!important}
+.metric-card:nth-child(8){--accent:var(--ff-purple)!important}
+
+/* Hero com leitura mais clara */
+.balance-hero{min-height:292px!important;padding:28px!important;border-radius:22px!important;background:
+  radial-gradient(circle at 84% 12%,rgba(255,255,255,.18),transparent 22%),
+  radial-gradient(circle at 60% 100%,rgba(147,51,234,.28),transparent 36%),
+  linear-gradient(135deg,#6d28d9 0%,#7c3aed 48%,#1683ff 100%)!important}
+.hero-copy>span{font-size:9px!important;letter-spacing:.18em!important}
+.hero-copy strong{font-size:46px!important;margin-top:14px!important}
+.hero-copy small{font-size:10px!important}
+.projected-line{font-size:11px!important;margin-top:9px!important}
+.hero-button{margin-top:24px!important;padding:12px 15px!important;border-radius:12px!important}
+.credit-card-art{right:30px!important;top:40px!important;width:164px!important;height:98px!important;background:linear-gradient(145deg,#7c3aed,#1683ff)!important}
+
+/* Agenda mais visual */
+.side-panel{padding:18px!important}
+.side-panel .panel-title{padding-bottom:7px;border-bottom:1px solid #edf0f4}
+.side-panel .row{padding:11px 0!important}
+.side-panel .row>div:first-child:before{display:none!important}
+
+/* A pagar e investimentos como cartões de destaque */
+.dashboard-pay-panel,.dashboard-invest-panel{min-height:230px!important;position:relative;overflow:hidden}
+.dashboard-pay-panel:after,.dashboard-invest-panel:after{content:"";position:absolute;right:-38px;bottom:-45px;width:125px;height:125px;border-radius:50%;opacity:.10;pointer-events:none}
+.dashboard-pay-panel:after{background:var(--ff-orange)}
+.dashboard-invest-panel:after{background:var(--ff-purple)}
+.dashboard-pay-panel .dashboard-total-row strong{font-size:28px!important}
+.dashboard-invest-panel .dashboard-total-row strong{font-size:28px!important}
+
+/* Insight mais leve e vibrante */
+.analysis-panel .analysis-box{min-height:178px!important;border-radius:17px!important;padding:20px!important;background:linear-gradient(135deg,#6d28d9,#9333ea 55%,#1683ff)!important}
+.analysis-box strong{color:#fff!important}
+.analysis-box small{color:rgba(255,255,255,.86)!important}
+
+/* Conta com inicial do banco */
+.account-initial{background:linear-gradient(145deg,#7c3aed,#1683ff)!important;color:#fff!important;font-weight:950!important;font-size:18px!important}
+
+/* Espaçamento e ordem do dashboard */
+.dashboard-grid{gap:16px!important;margin-top:16px!important}
+.dashboard-grid .panel{border-radius:20px!important}
+
+@media(min-width:1101px){
+  .premium{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  .dashboard-grid{grid-template-columns:minmax(0,1.55fr) minmax(310px,.82fr)!important}
+  .chart-panel{min-height:315px}
+  .transactions-panel{min-height:315px}
+}
+
+@media(max-width:1100px){
+  .metric-card{min-height:125px!important}
+  .dashboard-grid{grid-template-columns:1fr!important}
+}
+
+@media(max-width:760px){
+  .topbar{padding-top:13px!important}
+  .topbar h2{font-size:20px!important}
+  .toolbar{margin-bottom:12px!important}
+  .metric-card{min-height:94px!important;padding:12px!important;border-radius:17px!important}
+  .metric-card>b{font-size:17px!important;margin-top:9px!important}
+  .metric-head{font-size:7px!important}
+  .metric-card small{font-size:8px!important}
+  .balance-hero{min-height:235px!important;padding:20px!important}
+  .hero-copy strong{font-size:31px!important}
+  .hero-button{margin-top:20px!important;font-size:9px!important}
+  .credit-card-art{right:-12px!important;top:45px!important;width:135px!important;height:84px!important;opacity:.72}
+  .dashboard-pay-panel,.dashboard-invest-panel{min-height:195px!important}
+  .dashboard-pay-panel .dashboard-total-row strong,.dashboard-invest-panel .dashboard-total-row strong{font-size:21px!important}
+  .analysis-panel .analysis-box{min-height:160px!important}
+}

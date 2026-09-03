@@ -410,6 +410,7 @@ function dbMoney(n){return money(Number(n||0))}
 function dbEscAttr(v){return esc(v).replace(/`/g,'&#096;')}
 function accountKindLabel(k){return ({corrente:'Conta corrente',poupanca:'Poupança',dinheiro:'Dinheiro',investimento:'Investimento',outro:'Outra'})[k]||'Conta'}
 function accountIcon(k){return k==='poupanca'?'🐷':k==='dinheiro'?'💵':k==='investimento'?'📈':'🏦'}
+function accountInitial(name){const s=String(name||'').trim();return s?s.charAt(0).toUpperCase():'C'}
 function frequencyLabel(f){return f==='weekly'?'Toda semana':f==='yearly'?'Todo ano':'Todo mês'}
 function addMonthsISO(base,n,day){
  const d=new Date(`${base}T12:00:00`); d.setMonth(d.getMonth()+n); if(day){const y=d.getFullYear(),m=d.getMonth();const last=new Date(y,m+1,0).getDate();d.setDate(Math.min(Number(day),last));}
@@ -426,7 +427,7 @@ function renderLocalModules(){
  $('#cardsBillsTotal').textContent=dbMoney(bills);
  $('#recurrenceCount').textContent=allRecurrences.length;
  const accountList=$('#accountsList');
- if(accountList) accountList.innerHTML=allAccounts.length?allAccounts.map(a=>`<article class="local-card account-card"><div class="local-card-head"><span class="local-icon">${accountIcon(a.kind)}</span><div><b>${esc(a.name)}</b><small>${esc(accountKindLabel(a.kind))}</small></div></div><strong>${dbMoney(a.balance)}</strong><div class="local-actions"><button onclick="adjustAccount('${dbEscAttr(a.id)}')">↕ Ajustar saldo</button><button onclick="editAccount('${dbEscAttr(a.id)}')">✏️ Editar</button><button class="danger" onclick="deleteAccount('${dbEscAttr(a.id)}')">Excluir</button></div></article>`).join(''):'<div class="empty">Nenhuma conta cadastrada. Adicione conta corrente, poupança, dinheiro ou investimento.</div>';
+ if(accountList) accountList.innerHTML=allAccounts.length?allAccounts.map(a=>`<article class="local-card account-card"><div class="local-card-head"><span class="local-icon account-initial">${esc(accountInitial(a.name))}</span><div><b>${esc(a.name)}</b><small>${esc(accountKindLabel(a.kind))}</small></div></div><strong>${dbMoney(a.balance)}</strong><div class="local-actions"><button onclick="adjustAccount('${dbEscAttr(a.id)}')">↕ Ajustar saldo</button><button onclick="editAccount('${dbEscAttr(a.id)}')">✏️ Editar</button><button class="danger" onclick="deleteAccount('${dbEscAttr(a.id)}')">Excluir</button></div></article>`).join(''):'<div class="empty">Nenhuma conta cadastrada. Adicione conta corrente, poupança, dinheiro ou investimento.</div>';
  const cardsList=$('#cardsList');
  if(cardsList) cardsList.innerHTML=allCards.length?allCards.map(c=>{
    const purchases=allCardPurchases.filter(x=>x.card_id===c.id);
