@@ -124,4 +124,5 @@
 </div>
 <div id="modal" class="modal hidden"><div class="modal-card"><button id="closeModal" class="modal-close">×</button><div id="modalContent"></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="app.js"></script>
+<script>if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));</script>
 </body></html>
