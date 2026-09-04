@@ -1361,3 +1361,40 @@ input:focus,select:focus,textarea:focus{border-color:#a78bfa!important;box-shado
 .bill-payment-summary b{font-size:1.1rem}.bill-payment-summary span,.bill-payment-summary small{opacity:.85}.bill-payment-summary strong{font-size:1.8rem;margin-top:4px}
 .bill-preview{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.bill-preview>div{padding:10px;border-radius:12px;background:#f5f5fa;display:grid;gap:3px}.bill-preview span{font-size:.78rem;opacity:.7}.bill-preview b{font-size:1rem}.bill-preview .negative{color:#dc2626}
 @media(max-width:700px){.bill-preview{grid-template-columns:1fr}.purchase-list-head{align-items:flex-start}}
+
+/* =========================================================
+   FAMÍLIA FINANCEIRA 5.8.4 — CORREÇÃO DO MODAL NO CELULAR
+   O modal de pagamento deve ficar acima do menu inferior e
+   o botão de confirmação deve permanecer acessível.
+   ========================================================= */
+@media (max-width: 760px){
+  .modal{
+    z-index:100000!important;
+    align-items:flex-end!important;
+    padding:10px 10px max(10px, env(safe-area-inset-bottom))!important;
+  }
+  .modal-card{
+    position:relative!important;
+    z-index:100001!important;
+    width:100%!important;
+    max-width:100%!important;
+    max-height:calc(100dvh - 20px)!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    padding:20px 18px 24px!important;
+    padding-bottom:max(24px, calc(24px + env(safe-area-inset-bottom)))!important;
+  }
+  .modal-card form .primary,
+  .modal-card form button[type="submit"]{
+    position:sticky!important;
+    bottom:0!important;
+    z-index:5!important;
+    width:100%!important;
+    min-height:50px!important;
+    margin-top:12px!important;
+    margin-bottom:2px!important;
+    background:#6d28d9!important;
+    color:#fff!important;
+    box-shadow:0 -8px 18px rgba(255,255,255,.9),0 8px 22px rgba(83,48,170,.22)!important;
+  }
+}
