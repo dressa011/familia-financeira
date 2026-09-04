@@ -1090,3 +1090,106 @@ input:focus,select:focus,textarea:focus{border-color:#a78bfa!important;box-shado
 .transaction-row[data-status="paid"]{border-left:5px solid #22c55e!important;background:linear-gradient(90deg,#f0fdf4 0%,#fff 28%)!important}
 .transaction-row[data-status="pending"],.transaction-row[data-status="overdue"]{border-left:5px solid #ef4444!important;background:linear-gradient(90deg,#fff1f2 0%,#fff 28%)!important}
 .goal-actions button:first-child{background:#7c3aed!important;color:#fff!important;border-color:#7c3aed!important}
+
+/* =========================================================
+   FAMÍLIA FINANCEIRA 5.8 — MOBILE REDESIGN
+   Não altera lógica/JS/banco. Apenas melhora a experiência móvel.
+   ========================================================= */
+@media (max-width:760px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}
+  body{background:#f7f6fc!important}
+  .app-shell{width:100%!important;max-width:100%!important}
+  .topbar{position:sticky!important;top:0!important;z-index:50!important;padding:10px 12px!important;border-bottom:1px solid #ece8f6!important;background:rgba(250,249,253,.94)!important;box-shadow:0 5px 20px rgba(54,35,90,.05)!important}
+  .topbar h2{font-size:18px!important;line-height:1.15!important;margin:0!important}
+  .topbar p{font-size:9px!important;margin-top:3px!important}
+  .top-actions{margin-left:auto!important}
+  .icon-circle{width:34px!important;height:34px!important;min-width:34px!important}
+  .family-chip{height:36px!important;border-radius:12px!important}
+  .family-chip .avatar{width:28px!important;height:28px!important}
+  .logout-top{display:none!important}
+
+  .app-shell main{padding:14px 12px 92px!important}
+  .toolbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin:0 0 14px!important}
+  .toolbar h1{font-size:20px!important;line-height:1.15!important}
+  .toolbar .muted{font-size:9px!important}
+  .quick-btn{font-size:0!important;width:42px!important;height:42px!important;padding:0!important;border-radius:14px!important;display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 42px!important}
+  .quick-btn::after{content:'+';font-size:24px!important;font-weight:800!important;line-height:1!important}
+
+  /* Cards: 2 col compactas, leitura rápida */
+  .metric-grid.premium{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+  .metric-card{min-width:0!important;min-height:108px!important;padding:13px!important;border-radius:17px!important;box-shadow:0 5px 18px rgba(70,48,110,.07)!important}
+  .metric-head{display:flex!important;align-items:center!important;gap:5px!important;font-size:8px!important;white-space:nowrap!important}
+  .metric-head em{display:block!important;font-size:7px!important;margin-left:auto!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:48px!important}
+  .metric-icon{width:30px!important;height:30px!important;border-radius:10px!important;font-size:14px!important;flex:0 0 30px!important}
+  .metric-card>b{font-size:18px!important;line-height:1!important;margin-top:12px!important;display:block!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+  .metric-card small{font-size:8px!important;line-height:1.2!important;display:block!important;margin-top:5px!important}
+
+  /* Ordem visual mais útil no celular */
+  .dashboard-grid{display:flex!important;flex-direction:column!important;gap:12px!important;margin-top:12px!important}
+  .dashboard-grid>.balance-hero{order:1!important}
+  .dashboard-grid>.side-panel{order:2!important}
+  .dashboard-grid>.chart-panel{order:3!important}
+  .dashboard-grid>.goals-panel{order:4!important}
+  .dashboard-grid>.transactions-panel{order:5!important}
+  .dashboard-grid>.dashboard-pay-panel{order:6!important}
+  .dashboard-grid>.dashboard-invest-panel{order:7!important}
+
+  .balance-hero{min-height:230px!important;padding:20px!important;border-radius:20px!important;overflow:hidden!important}
+  .hero-copy>span{font-size:9px!important}
+  .hero-copy strong{font-size:32px!important;margin-top:12px!important;letter-spacing:-.04em!important}
+  .hero-copy small{font-size:9px!important;max-width:70%!important;display:block!important;line-height:1.35!important}
+  .projected-line{font-size:10px!important;max-width:72%!important;line-height:1.35!important}
+  .hero-button{font-size:9px!important;padding:11px 13px!important;margin-top:18px!important}
+  .credit-card-art{right:-18px!important;top:30px!important;width:142px!important;height:84px!important;opacity:.58!important;transform:rotate(8deg) scale(.9)!important}
+  .mini-bars{display:none!important}
+
+  .panel{border-radius:18px!important;padding:15px!important;box-shadow:0 5px 18px rgba(70,48,110,.06)!important}
+  .panel-title{gap:8px!important}
+  .panel-title h3{font-size:14px!important}
+  .panel-title .eyebrow{font-size:8px!important}
+  .side-panel .row{padding:11px 0!important}
+
+  .chart-panel{min-height:290px!important}
+  .chart-wrap{height:145px!important}
+  .chart-bars{gap:12px!important}
+  .chart-col{width:38px!important}
+
+  .local-summary-grid,.accounts-summary{grid-template-columns:1fr 1fr!important;gap:9px!important}
+  .local-summary{min-width:0!important;padding:13px!important}
+  .local-summary b{font-size:17px!important}
+
+  /* Listas e tabelas viram cartões roláveis */
+  .table-wrap,.transactions-list,.table-responsive{width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+  table{min-width:650px!important}
+  .transaction-row{border-radius:14px!important;margin-bottom:8px!important;padding:11px!important}
+  .tx-status{min-width:70px!important;padding:6px 8px!important;font-size:9px!important}
+
+  /* Formulários confortáveis para toque */
+  input,select,textarea{min-height:44px!important;font-size:16px!important;border-radius:12px!important}
+  button,.primary,.secondary{min-height:42px!important}
+  .modal-card{width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important;max-height:88vh!important;overflow:auto!important;border-radius:20px!important}
+
+  /* Navegação inferior: estilo app */
+  .mobile-nav{position:fixed!important;left:10px!important;right:10px!important;bottom:10px!important;width:auto!important;height:66px!important;z-index:100!important;border-radius:20px!important;padding:6px!important;display:grid!important;grid-template-columns:1fr 1fr 1fr 58px 1fr 1fr!important;gap:2px!important;background:rgba(255,255,255,.94)!important;box-shadow:0 14px 35px rgba(45,28,83,.18)!important}
+  .mobile-nav button{min-width:0!important;min-height:52px!important;border:0!important;border-radius:15px!important;background:transparent!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;font-size:17px!important}
+  .mobile-nav button small{font-size:7px!important;font-weight:800!important;line-height:1!important}
+  .mobile-nav button.active{background:#f1eaff!important;color:#6d28d9!important}
+  .mobile-nav button.active span{background:transparent!important}
+  .mobile-nav #mobileAdd{width:52px!important;height:52px!important;align-self:center!important;justify-self:center!important;border-radius:17px!important;background:linear-gradient(135deg,#7c3aed,#5b5bf7)!important;color:#fff!important;box-shadow:0 8px 20px rgba(102,55,214,.3)!important}
+  .mobile-nav #mobileAdd b{font-size:27px!important;font-weight:500!important;line-height:1!important}
+
+  /* Esconde detalhes de desktop que poluem a tela */
+  .sidebar-footer{display:none!important}
+}
+
+@media(max-width:390px){
+  .app-shell main{padding-left:9px!important;padding-right:9px!important}
+  .metric-grid.premium{gap:7px!important}
+  .metric-card{padding:11px!important;min-height:101px!important}
+  .metric-card>b{font-size:16px!important}
+  .metric-head{font-size:7px!important}
+  .metric-icon{width:28px!important;height:28px!important;flex-basis:28px!important}
+  .balance-hero{min-height:220px!important;padding:18px!important}
+  .hero-copy strong{font-size:29px!important}
+  .mobile-nav{left:6px!important;right:6px!important;bottom:6px!important;height:64px!important}
+}
