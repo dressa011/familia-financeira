@@ -8,7 +8,7 @@ const effectiveStatus=x=>{
   if(x.due_date && x.due_date < todayISO()) return 'overdue';
   return 'pending';
 };
-const statusLabel=(s,x)=>x?.type==='income'&&s==='paid'?'Recebido':s==='paid'?'Pago':s==='overdue'?'Atrasado':'Pendente';
+const statusLabel=s=>s==='paid'?'Pago':s==='overdue'?'Atrasado':'Pendente';
 const categoryFor=x=>{
   const d=(x.description||'').toLowerCase();
   if(/mercad|supermerc|feira|açougue/.test(d)) return 'Mercado';
@@ -157,7 +157,7 @@ function renderDashboardExtras(tx){
   const payTotal=pending.reduce((s,x)=>s+Number(x.amount||0),0);
   const payTotalEl=$('#dashboardPayTotal'); if(payTotalEl) payTotalEl.textContent=money(payTotal);
   const payList=$('#dashboardPayList');
-  if(payList) payList.innerHTML=pending.slice(0,4).map(x=>`<div class="dashboard-mini-row"><div><b>${esc(x.description)}</b><small>${dateBR(x.due_date)} · ${statusLabel(effectiveStatus(x),x)}</small></div><strong class="mini-negative">- ${money(x.amount)}</strong></div>`).join('')||'<div class="dashboard-empty">Nenhuma despesa pendente 🎉</div>';
+  if(payList) payList.innerHTML=pending.slice(0,4).map(x=>`<div class="dashboard-mini-row"><div><b>${esc(x.description)}</b><small>${dateBR(x.due_date)} · ${statusLabel(effectiveStatus(x))}</small></div><strong class="mini-negative">- ${money(x.amount)}</strong></div>`).join('')||'<div class="dashboard-empty">Nenhuma despesa pendente 🎉</div>';
 
   const investments=(allAccounts||[]).filter(a=>a.kind==='investimento');
   const investTotal=investments.reduce((s,a)=>s+Number(a.balance||0),0);
@@ -217,11 +217,11 @@ function cardBrandIcon(name){
 
 function txRow(x){
   const st=effectiveStatus(x);
-  return `<div class="row agenda-row ${x.type==='expense'?'expense-row':''}" data-id="${esc(x.id)}"><div class="agenda-main"><span class="agenda-icon">${smartIcon(x.description,x.type==='income'?'💰':'📌')}</span><div><b>${esc(x.description)}</b><small>${dateBR(x.due_date)} · ${statusLabel(st,x)} · ${categoryFor(x)}</small></div></div><span class="amount ${x.type}">${x.type==='expense'?'-':''}${money(x.amount)}</span></div>`
+  return `<div class="row agenda-row ${x.type==='expense'?'expense-row':''}" data-id="${esc(x.id)}"><div class="agenda-main"><span class="agenda-icon">${smartIcon(x.description,x.type==='income'?'💰':'📌')}</span><div><b>${esc(x.description)}</b><small>${dateBR(x.due_date)} · ${statusLabel(st)} · ${categoryFor(x)}</small></div></div><span class="amount ${x.type}">${x.type==='expense'?'-':''}${money(x.amount)}</span></div>`
 }
 function txRowRecent(x){
   const st=effectiveStatus(x);
-  return `<div class="row ${x.type==='expense'?'expense-row':''}"><div><b>${esc(x.description)}</b><small>${x.type==='income'?'Receita':'Despesa'} · ${dateBR(x.due_date)} · ${statusLabel(st,x)}${x.profiles?.full_name?' · '+esc(x.profiles.full_name):''}</small></div><span class="amount ${x.type}">${x.type==='expense'?'-':''}${money(x.amount)}</span></div>`
+  return `<div class="row ${x.type==='expense'?'expense-row':''}"><div><b>${esc(x.description)}</b><small>${x.type==='income'?'Receita':'Despesa'} · ${dateBR(x.due_date)} · ${statusLabel(st)}${x.profiles?.full_name?' · '+esc(x.profiles.full_name):''}</small></div><span class="amount ${x.type}">${x.type==='expense'?'-':''}${money(x.amount)}</span></div>`
 }
 function txRowFull(x){
   const isExpense=x.type==='expense';
@@ -229,7 +229,7 @@ function txRowFull(x){
   const payBtn=isExpense && st!=='paid'?`<button class="pay-btn" onclick="payTx('${x.id}')">✓ Pagar</button>`:'';
   const pdfBtn=`<button class="pdf-btn" onclick="manageDocs('${x.id}')">📎 PDF</button>`;
   return `<div class="row transaction-row" data-type="${x.type}" data-status="${st}" data-search="${esc((x.description||'').toLowerCase())}">
-    <div class="tx-main"><b>${esc(x.description)}</b><small>${isExpense?'Despesa':'Receita'} · ${dateBR(x.due_date)} · <span class="tx-status ${st}">${statusLabel(st,x)}</span>${x.profiles?.full_name?' · '+esc(x.profiles.full_name):''} · <span class="tx-category">${categoryFor(x)}</span></small></div>
+    <div class="tx-main"><b>${esc(x.description)}</b><small>${isExpense?'Despesa':'Receita'} · ${dateBR(x.due_date)} · <span class="tx-status ${st}">${statusLabel(st)}</span>${x.profiles?.full_name?' · '+esc(x.profiles.full_name):''} · <span class="tx-category">${categoryFor(x)}</span></small></div>
     <div class="row-actions transaction-actions"><span class="amount ${x.type}">${isExpense?'-':''}${money(x.amount)}</span>${payBtn}<button class="edit-btn" onclick="editTx('${x.id}')">✏️ Editar</button>${pdfBtn}<button class="icon-btn" onclick="deleteTx('${x.id}')">🗑️</button></div>
   </div>`
 }
@@ -266,7 +266,7 @@ window.showCalendarDay=key=>{
   const list=allTransactions.filter(x=>x.due_date===key);
   if(!list.length)return;
   const total=list.reduce((s,x)=>s+(x.type==='expense'?-1:1)*Number(x.amount||0),0);
-  $('#modalContent').innerHTML=`<h3>${dateBR(key)}</h3><p class="doc-help">${list.length} lançamento(s) · saldo do dia ${money(total)}</p><div class="day-details">${list.map(x=>`<div class="day-detail"><div><b>${esc(x.description)}</b><small>${x.type==='expense'?'Despesa':'Receita'} · ${statusLabel(effectiveStatus(x),x)} · ${categoryFor(x)}</small></div><strong class="${x.type}">${x.type==='expense'?'-':''}${money(x.amount)}</strong></div>`).join('')}</div>`;
+  $('#modalContent').innerHTML=`<h3>${dateBR(key)}</h3><p class="doc-help">${list.length} lançamento(s) · saldo do dia ${money(total)}</p><div class="day-details">${list.map(x=>`<div class="day-detail"><div><b>${esc(x.description)}</b><small>${x.type==='expense'?'Despesa':'Receita'} · ${statusLabel(effectiveStatus(x))} · ${categoryFor(x)}</small></div><strong class="${x.type}">${x.type==='expense'?'-':''}${money(x.amount)}</strong></div>`).join('')}</div>`;
   $('#modal').classList.remove('hidden');
 };
 function applyTxFilter(){
@@ -312,7 +312,7 @@ function renderReport(){
   $('#reportPeriodLabel').textContent=month?new Date(month+'-01T12:00:00').toLocaleDateString('pt-BR',{month:'long',year:'numeric'}):'Todos os períodos';
   $('#reportRows').innerHTML=tx.length?tx.map(x=>{
     const type=x.type==='income'?'Receita':'Despesa';
-    const status=statusLabel(effectiveStatus(x),x);
+    const status=statusLabel(effectiveStatus(x));
     const pdf=reportDocs.has(x.id)?'📎 Sim':'—';
     return `<tr><td>${dateBR(x.due_date)}</td><td>${esc(x.description)}</td><td>${type}</td><td class="report-value ${x.type}">${x.type==='expense'?'-':''}${money(x.amount)}</td><td><span class="tx-status ${effectiveStatus(x)}">${status}</span></td><td>${pdf}</td></tr>`;
   }).join(''):'<tr><td colspan="6" class="report-empty">Nenhum lançamento encontrado para o período.</td></tr>';
@@ -335,131 +335,34 @@ function openModal(type){
   title='Novo lançamento';
   const accountOptions=allAccounts.map(a=>`<option value="${dbEscAttr(a.id)}">${esc(a.name)}</option>`).join('');
   const cardOptions=allCards.map(c=>`<option value="${dbEscAttr(c.id)}">${esc(c.name)}${c.last4?' · •••• '+esc(c.last4):''}</option>`).join('');
-  html=`<form id="txForm"><label>Tipo</label><select name="type"><option value="expense">Despesa</option><option value="income">Receita</option></select><label>Descrição</label><input name="description" required placeholder="Ex.: Supermercado"><label>Valor</label><input name="amount" type="number" step="0.01" min="0" required><label>Vencimento</label><input name="due_date" type="date"><label>Status</label><select name="status" id="txStatusSelect"><option value="pending">Pendente</option><option value="paid">Pago / Recebido</option></select><label>Conta</label><select name="account_id" id="txAccountSelect"><option value="">Nenhuma</option>${accountOptions}</select><label>Cartão</label><select name="card_id"><option value="">Nenhum</option>${cardOptions}</select><p class="form-note">Conta e cartão são opcionais. Compras parceladas feitas pela tela Cartões já entram automaticamente em Finanças.</p><button class="primary">Salvar lançamento</button></form>`;
+  html=`<form id="txForm"><label>Tipo</label><select name="type"><option value="expense">Despesa</option><option value="income">Receita</option></select><label>Descrição</label><input name="description" required placeholder="Ex.: Supermercado"><label>Valor</label><input name="amount" type="number" step="0.01" min="0" required><label>Vencimento</label><input name="due_date" type="date"><label>Status</label><select name="status"><option value="pending">Pendente</option><option value="paid">Pago</option></select><label>Conta</label><select name="account_id"><option value="">Nenhuma</option>${accountOptions}</select><label>Cartão</label><select name="card_id"><option value="">Nenhum</option>${cardOptions}</select><p class="form-note">Conta e cartão são opcionais. Compras parceladas feitas pela tela Cartões já entram automaticamente em Finanças.</p><button class="primary">Salvar lançamento</button></form>`;
  }else{
   title='Nova meta';html=`<form id="goalForm"><label>Nome</label><input name="name" required placeholder="Ex.: Reserva de emergência"><label>Valor da meta</label><input name="target_amount" type="number" step="0.01" min="0.01" required><label>Valor já guardado</label><input name="current_amount" type="number" step="0.01" min="0" value="0"><label>Prazo</label><input name="deadline" type="date"><label>Descrição</label><textarea name="description" rows="3"></textarea><button class="primary">Salvar meta</button></form>`;
  }
- $('#modalContent').innerHTML=`<h3>${title}</h3>${html}`;$('#modal').classList.remove('hidden');$('#txForm')?.addEventListener('submit',saveTransaction);
-$('#txForm')?.querySelector('[name="type"]')?.addEventListener('change',e=>{
- const status=$('#txStatusSelect');
- if(status){
-   const isIncome=e.target.value==='income';
-   const paid=status.querySelector('option[value="paid"]');
-   if(paid) paid.textContent=isIncome?'Recebido':'Pago';
- }
-});$('#goalForm')?.addEventListener('submit',saveGoal);
+ $('#modalContent').innerHTML=`<h3>${title}</h3>${html}`;$('#modal').classList.remove('hidden');$('#txForm')?.addEventListener('submit',saveTransaction);$('#goalForm')?.addEventListener('submit',saveGoal);
 }
 function closeModal(){$('#modal').classList.add('hidden')}
 async function saveTransaction(e){
  e.preventDefault();
- const f=new FormData(e.target);
- const type=f.get('type'), status=f.get('status'), amount=Number(f.get('amount'));
- const accountId=f.get('account_id')||null;
- if(type==='income' && status==='paid' && !accountId){
-   alert('Para registrar uma receita como Recebida, escolha a conta onde o dinheiro entrou.');
-   return;
- }
- const payload={
-   type,
-   description:f.get('description'),
-   amount,
-   due_date:f.get('due_date')||null,
-   status,
-   created_by:me.id,
-   responsible_profile_id:me.id,
-   paid_at:status==='paid'?new Date().toISOString():null,
-   account_id:accountId,
-   card_id:f.get('card_id')||null
- };
- const {data:created,error}=await db.from('transactions').insert(payload).select('id').single();
- if(error){alert(error.message);return;}
-
- // Receitas recebidas entram imediatamente no saldo da conta escolhida.
- if(type==='income' && status==='paid' && accountId){
-   const account=allAccounts.find(a=>a.id===accountId);
-   if(!account){
-     await db.from('transactions').delete().eq('id',created.id).eq('created_by',me.id);
-     alert('A conta escolhida não foi encontrada.');
-     return;
-   }
-   const before=Number(account.balance||0), after=before+amount;
-   const {error:accountError}=await db.from('accounts')
-     .update({balance:after,updated_at:new Date().toISOString()})
-     .eq('id',accountId).eq('created_by',me.id);
-   if(accountError){
-     await db.from('transactions').delete().eq('id',created.id).eq('created_by',me.id);
-     alert('Não foi possível atualizar o saldo da conta: '+accountError.message);
-     return;
-   }
- }
- closeModal();await loadAll();
+ const f=new FormData(e.target), payload={type:f.get('type'),description:f.get('description'),amount:Number(f.get('amount')),due_date:f.get('due_date')||null,status:f.get('status'),created_by:me.id,responsible_profile_id:me.id,paid_at:f.get('status')==='paid'?new Date().toISOString():null,account_id:f.get('account_id')||null,card_id:f.get('card_id')||null};
+ const {error}=await db.from('transactions').insert(payload);if(error){alert(error.message);return;}closeModal();await loadAll();
 }
 window.editTx=async id=>{
  const x=allTransactions.find(t=>t.id===id); if(!x)return;
- const accountOptions=allAccounts.map(a=>`<option value="${dbEscAttr(a.id)}" ${x.account_id===a.id?'selected':''}>${esc(a.name)} · saldo ${dbMoney(a.balance)}</option>`).join('');
  $('#modalContent').innerHTML=`<h3>Editar lançamento</h3><form id="editTxForm">
  <label>Tipo</label><select name="type"><option value="expense" ${x.type==='expense'?'selected':''}>Despesa</option><option value="income" ${x.type==='income'?'selected':''}>Receita</option></select>
  <label>Descrição</label><input name="description" required value="${esc(x.description)}">
  <label>Valor</label><input name="amount" type="number" step="0.01" min="0" required value="${Number(x.amount||0)}">
  <label>Vencimento</label><input name="due_date" type="date" value="${x.due_date||''}">
- <label>Status</label><select name="status"><option value="pending" ${x.status==='pending'?'selected':''}>Pendente</option><option value="paid" ${x.status==='paid'?'selected':''}>${x.type==='income'?'Recebido':'Pago'}</option></select>
- <label>Conta</label><select name="account_id"><option value="">Nenhuma</option>${accountOptions}</select>
- <p class="form-note">Receitas marcadas como <b>Recebidas</b> entram no saldo da conta escolhida. Despesas continuam sendo descontadas quando forem pagas.</p>
+ <label>Status</label><select name="status"><option value="pending" ${x.status==='pending'?'selected':''}>Pendente</option><option value="paid" ${x.status==='paid'?'selected':''}>Pago</option></select>
+ <p class="form-note">Categoria identificada: <b>${esc(categoryFor(x))}</b></p>
  <button class="primary">Salvar alterações</button></form>`;
  $('#modal').classList.remove('hidden');
  $('#editTxForm').addEventListener('submit',async e=>{
-   e.preventDefault();
-   const f=new FormData(e.target);
-   const newType=f.get('type'), newStatus=f.get('status'), newAmount=Number(f.get('amount'));
-   const newAccountId=f.get('account_id')||null;
-   if(newType==='income' && newStatus==='paid' && !newAccountId){
-     alert('Para registrar uma receita como Recebida, escolha a conta onde o dinheiro entrou.');
-     return;
-   }
-
-   // Ajusta somente o que mudou, evitando creditar duas vezes ao salvar novamente.
-   const oldIncomeReceived=x.type==='income' && effectiveStatus(x)==='paid';
-   const newIncomeReceived=newType==='income' && newStatus==='paid';
-   const oldAccountId=x.account_id||null;
-   const oldAmount=Number(x.amount||0);
-
-   if(oldIncomeReceived && oldAccountId){
-     const oldAccount=allAccounts.find(a=>a.id===oldAccountId);
-     if(oldAccount){
-       const oldAfter=Math.max(0,Number(oldAccount.balance||0)-oldAmount);
-       const {error:oldErr}=await db.from('accounts').update({balance:oldAfter,updated_at:new Date().toISOString()}).eq('id',oldAccount.id).eq('created_by',me.id);
-       if(oldErr){alert('Não foi possível ajustar o saldo da conta anterior: '+oldErr.message);return;}
-     }
-   }
-
-   const payload={
-     type:newType,
-     description:f.get('description'),
-     amount:newAmount,
-     due_date:f.get('due_date')||null,
-     status:newStatus,
-     paid_at:newStatus==='paid'?(x.paid_at||new Date().toISOString()):null,
-     account_id:newAccountId,
-     updated_at:new Date().toISOString()
-   };
+   e.preventDefault();const f=new FormData(e.target);
+   const payload={type:f.get('type'),description:f.get('description'),amount:Number(f.get('amount')),due_date:f.get('due_date')||null,status:f.get('status'),paid_at:f.get('status')==='paid'?(x.paid_at||new Date().toISOString()):null,updated_at:new Date().toISOString()};
    const {error}=await db.from('transactions').update(payload).eq('id',id).eq('created_by',me.id);
-   if(error){
-     // Tenta restaurar o saldo retirado acima.
-     if(oldIncomeReceived && oldAccountId){
-       const oldAccount=allAccounts.find(a=>a.id===oldAccountId);
-       if(oldAccount) await db.from('accounts').update({balance:Number(oldAccount.balance||0),updated_at:new Date().toISOString()}).eq('id',oldAccount.id).eq('created_by',me.id);
-     }
-     alert('Não foi possível editar: '+error.message);return;
-   }
-
-   if(newIncomeReceived && newAccountId){
-     const newAccount=allAccounts.find(a=>a.id===newAccountId);
-     if(!newAccount){alert('A conta escolhida não foi encontrada.');return;}
-     const before=Number(newAccount.balance||0), after=before+newAmount;
-     const {error:accountError}=await db.from('accounts').update({balance:after,updated_at:new Date().toISOString()}).eq('id',newAccount.id).eq('created_by',me.id);
-     if(accountError){alert('O lançamento foi salvo, mas não foi possível atualizar o saldo da conta: '+accountError.message);return;}
-   }
-   closeModal();await loadAll();
+   if(error){alert('Não foi possível editar: '+error.message);return;}closeModal();await loadAll();
  });
 };
 async function saveGoal(e){e.preventDefault();const f=new FormData(e.target),payload={name:f.get('name'),description:f.get('description')||null,target_amount:Number(f.get('target_amount')),current_amount:Number(f.get('current_amount')||0),deadline:f.get('deadline')||null,created_by:me.id};const {error}=await db.from('goals').insert(payload);if(error){alert(error.message);return;}closeModal();await loadAll();}
