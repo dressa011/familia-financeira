@@ -324,7 +324,7 @@ function openModal(type){
  let title='',html='';
  if(type==='transaction'){
   title='Novo lançamento';
-  const accountOptions=allAccounts.map(a=>`<option value="${dbEscAttr(a.id)}">${esc(a.name)}</option>`).join('');
+  const accountOptions=allAccounts.map(a=>`<option value="${dbEscAttr(a.id)}">${esc(a.name)} · saldo ${dbMoney(a.balance)}</option>`).join('');
   const cardOptions=allCards.map(c=>`<option value="${dbEscAttr(c.id)}">${esc(c.name)}${c.last4?' · •••• '+esc(c.last4):''}</option>`).join('');
   html=`<form id="txForm"><label>Tipo</label><select name="type"><option value="expense">Despesa</option><option value="income">Receita</option></select><label>Descrição</label><input name="description" required placeholder="Ex.: Supermercado"><label>Valor</label><input name="amount" type="number" step="0.01" min="0" required><label>Vencimento</label><input name="due_date" type="date"><label>Status</label><select name="status" id="txStatusSelect"><option value="pending">Pendente</option><option value="paid">Pago</option></select><label>Conta</label><select name="account_id" id="txAccountSelect"><option value="">Nenhuma</option>${accountOptions}</select><label>Cartão</label><select name="card_id"><option value="">Nenhum</option>${cardOptions}</select><p class="form-note">Para lançamentos Pagos/Recebidos, escolha a conta movimentada. O saldo será atualizado automaticamente. Compras parceladas feitas pela tela Cartões já entram automaticamente em Finanças.</p><button class="primary">Salvar lançamento</button></form>`;
  }else{
