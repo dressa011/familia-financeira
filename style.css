@@ -1081,3 +1081,12 @@ input:focus,select:focus,textarea:focus{border-color:#a78bfa!important;box-shado
 
 /* Pagamento de despesa - 5.1 */
 .pay-preview{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;padding:12px;border:1px solid #e6ebf3;border-radius:14px;background:#f8faff}.pay-preview div{padding:10px;border-radius:11px;background:#fff}.pay-preview span{display:block;color:#8190a4;font-size:9px;font-weight:700}.pay-preview b{display:block;margin-top:4px;font-size:13px;color:#1b2a41}.pay-preview b.negative{color:#df3d4e}
+
+
+/* Família Financeira 5.2 — status bem visível */
+.tx-status{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:82px!important;padding:6px 12px!important;border-radius:8px!important;font-size:11px!important;font-weight:900!important;letter-spacing:.4px!important;line-height:1!important;text-transform:uppercase!important;border:1px solid transparent!important;box-shadow:0 3px 8px rgba(0,0,0,.06)!important}
+.tx-status.paid{background:#22c55e!important;color:#fff!important;border-color:#16a34a!important}
+.tx-status.pending,.tx-status.overdue{background:#ef4444!important;color:#fff!important;border-color:#dc2626!important}
+.transaction-row[data-status="paid"]{border-left:5px solid #22c55e!important;background:linear-gradient(90deg,#f0fdf4 0%,#fff 28%)!important}
+.transaction-row[data-status="pending"],.transaction-row[data-status="overdue"]{border-left:5px solid #ef4444!important;background:linear-gradient(90deg,#fff1f2 0%,#fff 28%)!important}
+.goal-actions button:first-child{background:#7c3aed!important;color:#fff!important;border-color:#7c3aed!important}

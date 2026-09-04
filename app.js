@@ -400,7 +400,13 @@ window.payTx=async id=>{
     const accountId=select.value;
     const account=allAccounts.find(a=>a.id===accountId);
     if(!account)return;
-    const amount=Number(x.amount||0), newBalance=Number(account.balance||0)-amount;
+    const amount=Number(x.amount||0), beforeBalance=Number(account.balance||0), newBalance=beforeBalance-amount;
+    if(newBalance<0){
+      const missing=amount-beforeBalance;
+      alert(`🔴 SALDO INSUFICIENTE!\n\nConta: ${account.name}\nSaldo atual: ${dbMoney(beforeBalance)}\nValor da despesa: ${dbMoney(amount)}\nFalta: ${dbMoney(missing)}\n\nEscolha outra conta ou coloque dinheiro nesta conta.`);
+      updatePreview();
+      return;
+    }
     if(!confirm(`Confirmar pagamento de ${dbMoney(amount)} pela conta "${account.name}"?\n\nNovo saldo: ${dbMoney(newBalance)}`)) return;
     const now=new Date().toISOString();
     const accountUpdate=await db.from('accounts').update({balance:newBalance,updated_at:now}).eq('id',account.id);
@@ -443,7 +449,42 @@ window.openDoc=async id=>{
 
 window.deleteTx=async id=>{if(!confirm('Excluir este lançamento?'))return;const {error}=await db.from('transactions').delete().eq('id',id);if(error)alert(error.message);else await loadAll()};
 window.deleteGoal=async id=>{if(!confirm('Excluir esta meta?'))return;const {error}=await db.from('goals').delete().eq('id',id);if(error)alert(error.message);else await loadAll()};
-window.addToGoal=async id=>{const v=prompt('Quanto deseja adicionar à meta?');if(v===null)return;const n=Number(v);if(!n||n<0)return alert('Informe um valor válido.');const {data,error}=await db.from('goals').select('current_amount').eq('id',id).single();if(error)return alert(error.message);const r=await db.from('goals').update({current_amount:Number(data.current_amount)+n,updated_at:new Date().toISOString()}).eq('id',id);if(r.error)alert(r.error.message);else await loadAll()};
+window.addToGoal=async id=>{
+  const g=allGoals.find(x=>x.id===id);
+  if(!g)return;
+  const amountText=prompt(`Quanto deseja colocar na meta “${g.name}”?`);
+  if(amountText===null)return;
+  const n=Number(amountText);
+  if(!Number.isFinite(n)||n<=0)return alert('Informe um valor válido.');
+  if(!allAccounts.length)return alert('Antes de adicionar dinheiro à meta, cadastre pelo menos uma conta em Contas.');
+  const options=allAccounts.map(a=>`<option value="${dbEscAttr(a.id)}">${esc(a.name)} · saldo ${dbMoney(a.balance)}</option>`).join('');
+  $('#modalContent').innerHTML=`<h3>🎯 Colocar dinheiro na meta</h3>
+    <p class="doc-help"><b>${esc(g.name)}</b> · adicionar ${dbMoney(n)}</p>
+    <form id="goalPayForm">
+      <label>De qual conta você vai tirar o dinheiro?</label>
+      <select name="account_id" id="goalAccountSelect" required>${options}</select>
+      <div id="goalPayPreview" class="pay-preview"></div>
+      <p class="form-note">O valor será descontado da conta escolhida e acrescentado à meta.</p>
+      <button class="primary" type="submit">✓ Confirmar aporte</button>
+    </form>`;
+  $('#modal').classList.remove('hidden');
+  const select=$('#goalAccountSelect'),preview=$('#goalPayPreview');
+  const updatePreview=()=>{const a=allAccounts.find(a=>a.id===select.value);if(!a)return;const before=Number(a.balance||0),after=before-n;preview.innerHTML=`<div><span>Saldo atual</span><b>${dbMoney(before)}</b></div><div><span>Depois do aporte</span><b class="${after<0?'negative':''}">${dbMoney(after)}</b></div>`};
+  select.addEventListener('change',updatePreview);updatePreview();
+  $('#goalPayForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const account=allAccounts.find(a=>a.id===select.value);if(!account)return;
+    const before=Number(account.balance||0),after=before-n;
+    if(after<0){alert(`🔴 SALDO INSUFICIENTE!\n\nConta: ${account.name}\nSaldo atual: ${dbMoney(before)}\nValor para a meta: ${dbMoney(n)}\nFalta: ${dbMoney(n-before)}`);return;}
+    if(!confirm(`Adicionar ${dbMoney(n)} à meta “${g.name}” usando a conta “${account.name}”?\n\nNovo saldo da conta: ${dbMoney(after)}`))return;
+    const now=new Date().toISOString();
+    const accountUpdate=await db.from('accounts').update({balance:after,updated_at:now}).eq('id',account.id);
+    if(accountUpdate.error){alert('Não foi possível atualizar o saldo da conta: '+accountUpdate.error.message);return;}
+    const goalUpdate=await db.from('goals').update({current_amount:Number(g.current_amount||0)+n,updated_at:now}).eq('id',g.id);
+    if(goalUpdate.error){await db.from('accounts').update({balance:before,updated_at:new Date().toISOString()}).eq('id',account.id);alert('Não foi possível atualizar a meta: '+goalUpdate.error.message);return;}
+    closeModal();await loadAll();
+  });
+};
 
 /* =========================
    VERSÃO 2.3 — CONTAS, CARTÕES E RECORRÊNCIAS NO SUPABASE
@@ -495,7 +536,29 @@ window.editCard=id=>{const x=allCards.find(x=>x.id===id);if(x)openLocalEdit('car
 window.deleteCard=async id=>{if(!confirm('Excluir este cartão e suas compras do banco?'))return;const {error}=await db.from('cards').delete().eq('id',id);if(error)alert(error.message);else{await loadAll();renderLocalModules();}};
 window.addCardPurchase=async id=>{const c=allCards.find(x=>x.id===id);if(!c)return;localModal('Nova compra no cartão',`<form id="purchaseForm"><label>Descrição</label><input name="description" required placeholder="Ex.: Mercado"><label>Valor total da compra</label><input name="amount" type="number" step="0.01" min="0.01" required><label>Data da compra</label><input name="date" type="date" value="${todayISO()}"><label>Parcelas</label><input name="installments" type="number" min="1" max="60" value="1"><div class="installment-preview" id="installmentPreview">1x de R$ 0,00</div><p class="form-note">A compra será salva no Supabase e cada parcela será criada no financeiro.</p><button class="primary">Adicionar compra</button></form>`);const updateInstallmentPreview=()=>{const total=Number($('#purchaseForm [name=amount]')?.value||0),n=Math.max(1,Number($('#purchaseForm [name=installments]')?.value||1));$('#installmentPreview').textContent=`${n}x de ${dbMoney(total/n)}`};$('#purchaseForm [name=amount]')?.addEventListener('input',updateInstallmentPreview);$('#purchaseForm [name=installments]')?.addEventListener('input',updateInstallmentPreview);updateInstallmentPreview();$('#purchaseForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target),total=Number(f.get('amount')),n=Math.max(1,Number(f.get('installments')||1)),date=f.get('date')||todayISO(),part=Number((total/n).toFixed(2));const purchase={card_id:id,description:f.get('description'),amount:total,purchase_date:date,installments:n,installment_amount:part,created_by:me.id};const {data:cp,error:cpError}=await db.from('card_purchases').insert(purchase).select().single();if(cpError){alert('Não foi possível salvar a compra: '+cpError.message);return;}const rows=[];let remaining=total;for(let i=1;i<=n;i++){const value=i===n?Number(remaining.toFixed(2)):part;remaining-=value;rows.push({type:'expense',description:`${purchase.description}${n>1?` (${i}/${n})`:''}`,amount:value,due_date:addMonthsISO(date,i-1,c.due_day),status:'pending',created_by:me.id,responsible_profile_id:me.id,card_id:id,card_purchase_id:cp.id,installment_number:i,installments:n});}const {error:txError}=await db.from('transactions').insert(rows);if(txError){await db.from('card_purchases').delete().eq('id',cp.id);alert('A compra foi revertida porque as parcelas não puderam ser criadas: '+txError.message);return;}closeModal();await loadAll();renderLocalModules();}};
 window.generateCardTx=async id=>{};
-window.generateRecurrence=async id=>{const r=allRecurrences.find(x=>x.id===id);if(!r)return;if(!confirm(`Gerar ${r.type==='income'?'a receita':'a despesa'} “${r.description}” de ${dbMoney(r.amount)} no financeiro?`))return;const payload={type:r.type,description:r.description,amount:Number(r.amount),due_date:r.next_date||todayISO(),status:'pending',created_by:me.id,responsible_profile_id:me.id,recurrence_id:r.id};const {error}=await db.from('transactions').insert(payload);if(error){alert('Não foi possível gerar o lançamento: '+error.message);return;}const next=r.frequency==='weekly'?addMonthsISO(r.next_date||todayISO(),0):r.frequency==='yearly'?addMonthsISO(r.next_date||todayISO(),12):addMonthsISO(r.next_date||todayISO(),1);let nextDate=next;if(r.frequency==='weekly'){const d=new Date(`${r.next_date||todayISO()}T12:00:00`);d.setDate(d.getDate()+7);nextDate=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}const {error:updateError}=await db.from('recurrences').update({next_date:nextDate}).eq('id',r.id);if(updateError){alert('Lançamento criado, mas não foi possível atualizar a próxima data: '+updateError.message);}await loadAll();renderLocalModules();};
+window.generateRecurrence=async id=>{
+  const r=allRecurrences.find(x=>x.id===id);if(!r)return;
+  let accountId=null;
+  if(r.type==='expense'){
+    if(!allAccounts.length){alert('Antes de gerar uma despesa recorrente, cadastre pelo menos uma conta em Contas.');return;}
+    const options=allAccounts.map(a=>`<option value="${dbEscAttr(a.id)}">${esc(a.name)} · saldo ${dbMoney(a.balance)}</option>`).join('');
+    $('#modalContent').innerHTML=`<h3>🔄 Gerar despesa recorrente</h3><p class="doc-help"><b>${esc(r.description)}</b> · ${dbMoney(r.amount)}</p><form id="generateRecForm"><label>De qual conta você pretende pagar?</label><select name="account_id" id="recAccountSelect" required>${options}</select><p class="form-note">A despesa será criada como <b>Pendente</b>. O saldo só será descontado quando você clicar em <b>Pagar</b> no Financeiro.</p><button class="primary" type="submit">✓ Gerar lançamento</button></form>`;
+    $('#modal').classList.remove('hidden');
+    $('#generateRecForm').addEventListener('submit',async e=>{e.preventDefault();accountId=$('#recAccountSelect').value;await finishGenerateRecurrence(r,accountId);});
+    return;
+  }
+  if(!confirm(`Gerar a receita “${r.description}” de ${dbMoney(r.amount)} no financeiro?`))return;
+  await finishGenerateRecurrence(r,null);
+};
+async function finishGenerateRecurrence(r,accountId){
+  const payload={type:r.type,description:r.description,amount:Number(r.amount),due_date:r.next_date||todayISO(),status:'pending',created_by:me.id,responsible_profile_id:me.id,recurrence_id:r.id,...(accountId?{account_id:accountId}:{})};
+  const {error}=await db.from('transactions').insert(payload);
+  if(error){alert('Não foi possível gerar o lançamento: '+error.message);return;}
+  const next=r.frequency==='weekly'?addMonthsISO(r.next_date||todayISO(),0):r.frequency==='yearly'?addMonthsISO(r.next_date||todayISO(),12):addMonthsISO(r.next_date||todayISO(),1);let nextDate=next;if(r.frequency==='weekly'){const d=new Date(`${r.next_date||todayISO()}T12:00:00`);d.setDate(d.getDate()+7);nextDate=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+  const {error:updateError}=await db.from('recurrences').update({next_date:nextDate}).eq('id',r.id);
+  if(updateError){alert('Lançamento criado, mas não foi possível atualizar a próxima data: '+updateError.message);}
+  closeModal();await loadAll();renderLocalModules();
+}
 window.editRecurrence=id=>{const x=allRecurrences.find(x=>x.id===id);if(x)openLocalEdit('recurrence',x)};
 window.deleteRecurrence=async id=>{if(!confirm('Excluir esta recorrência do banco? Os lançamentos já gerados serão mantidos.'))return;const {error}=await db.from('recurrences').delete().eq('id',id);if(error)alert(error.message);else{await loadAll();renderLocalModules();}};
 window.openAccountModal=()=>openLocalEdit('account');window.openCardModal=()=>openLocalEdit('card');window.openRecurrenceModal=()=>openLocalEdit('recurrence');
