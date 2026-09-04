@@ -76,7 +76,7 @@
 
       <section id="view-finances" class="view hidden"><div class="toolbar"><div><h1>Finanças</h1><span class="muted">Todos os lançamentos da família</span></div><button class="primary quick-btn" data-open="transaction">＋ Lançamento</button></div><section class="panel"><div class="filters">
 <select id="txFilter"><option value="all">Todos os lançamentos</option><option value="income">Receitas</option><option value="expense">Despesas</option></select>
-<select id="txStatusFilter"><option value="all">Todos os status</option><option value="paid">Pagos</option><option value="pending">Pendentes</option><option value="overdue">Atrasados</option></select>
+<select id="txStatusFilter"><option value="all">Todos os status</option><option value="paid">Pagos / Recebidos</option><option value="pending">Pendentes</option><option value="overdue">Atrasados</option></select>
 <input id="txSearch" type="search" placeholder="🔎 Buscar lançamento...">
 </div><div id="transactions" class="stack"></div></section></section>
       <section id="view-calendar" class="view hidden"><div class="toolbar"><div><h1>Calendário</h1><span class="muted">Vencimentos e compromissos</span></div><div class="calendar-tools"><button class="secondary" id="prevMonth">‹</button><span id="calendarMonth" class="month-pill"></span><button class="secondary" id="nextMonth">›</button></div></div><section class="panel"><div id="calendar" class="calendar"></div><div id="calendarList" class="stack"></div></section></section>
@@ -106,7 +106,7 @@
       </section>
       <section id="view-profile" class="view hidden"><div class="toolbar"><div><h1>Perfil</h1><span class="muted">Dados da sua conta</span></div></div><section class="panel profile"><div class="profile-avatar" id="profileAvatar">F</div><h3 id="profileName">—</h3><p id="profileEmail">—</p><p id="profileRole">—</p></section></section>
       <section id="view-report" class="view hidden">
-        <div class="toolbar"><div><h1>Relatório Completo</h1><span class="muted">Resumo detalhado dos lançamentos da família</span></div><div class="report-toolbar-actions"><label>Mês <input type="month" id="reportMonth"></label><label>Status <select id="reportStatus"><option value="all">Todos</option><option value="paid">Pagos</option><option value="pending">Pendentes</option><option value="overdue">Atrasados</option></select></label><button type="button" class="secondary" id="reportAllBtn">Todos</button><button type="button" class="primary" id="reportPrintBtn">🖨️ Imprimir</button></div></div>
+        <div class="toolbar"><div><h1>Relatório Completo</h1><span class="muted">Resumo detalhado dos lançamentos da família</span></div><div class="report-toolbar-actions"><label>Mês <input type="month" id="reportMonth"></label><label>Status <select id="reportStatus"><option value="all">Todos</option><option value="paid">Pagos / Recebidos</option><option value="pending">Pendentes</option><option value="overdue">Atrasados</option></select></label><button type="button" class="secondary" id="reportAllBtn">Todos</button><button type="button" class="primary" id="reportPrintBtn">🖨️ Imprimir</button></div></div>
         <section class="report-cards">
           <article class="report-card"><span>RECEITAS</span><b id="reportIncome">R$ 0,00</b></article>
           <article class="report-card"><span>DESPESAS</span><b id="reportExpense">R$ 0,00</b></article>
