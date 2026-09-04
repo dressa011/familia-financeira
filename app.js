@@ -339,34 +339,10 @@ async function saveTransaction(e){
  const f=new FormData(e.target);
  const type=f.get('type'), status=f.get('status'), amount=Number(f.get('amount'));
  const accountId=f.get('account_id')||null;
-
- if(!Number.isFinite(amount) || amount<=0){
-   alert('Informe um valor válido.');
-   return;
- }
-
  if(status==='paid' && !accountId){
-   alert(type==='income'
-     ? 'Para registrar uma receita como Recebida, escolha a conta onde o dinheiro entrou.'
-     : 'Para registrar uma despesa como Paga, escolha a conta de onde o dinheiro saiu.');
+   alert(type==='income' ? 'Para registrar uma receita como Recebida, escolha a conta onde o dinheiro entrou.' : 'Para registrar uma despesa como Paga, escolha a conta de onde o dinheiro saiu.');
    return;
  }
-
- const account=accountId ? allAccounts.find(a=>a.id===accountId) : null;
-
- // Uma despesa paga precisa ter saldo suficiente na conta escolhida.
- if(type==='expense' && status==='paid'){
-   if(!account){
-     alert('A conta escolhida não foi encontrada.');
-     return;
-   }
-   const balance=Number(account.balance||0);
-   if(amount>balance){
-     alert(`⚠️ SALDO INSUFICIENTE\n\nConta: ${account.name}\nSaldo disponível: ${dbMoney(balance)}\nValor da despesa: ${dbMoney(amount)}\n\nA despesa não foi registrada como paga.`);
-     return;
-   }
- }
-
  const payload={
    type,
    description:f.get('description'),
@@ -379,36 +355,19 @@ async function saveTransaction(e){
    account_id:accountId,
    card_id:f.get('card_id')||null
  };
-
  const {data:created,error}=await db.from('transactions').insert(payload).select('id').single();
  if(error){alert(error.message);return;}
 
- // Atualiza o saldo somente depois que o lançamento foi salvo.
- if(status==='paid' && accountId){
-   const before=Number(account.balance||0);
-   const delta=type==='income' ? amount : -amount;
-   const after=before+delta;
-
-   // Proteção extra contra saldo insuficiente em caso de alteração concorrente.
-   if(type==='expense' && after<0){
-     await db.from('transactions').delete().eq('id',created.id).eq('created_by',me.id);
-     alert(`⚠️ SALDO INSUFICIENTE\n\nConta: ${account.name}\nSaldo disponível: ${dbMoney(before)}\nValor da despesa: ${dbMoney(amount)}\n\nA despesa foi cancelada e não foi descontada.`);
-     return;
-   }
-
-   const {error:accountError}=await db.from('accounts')
-     .update({balance:after,updated_at:new Date().toISOString()})
-     .eq('id',accountId).eq('created_by',me.id);
-
-   if(accountError){
-     await db.from('transactions').delete().eq('id',created.id).eq('created_by',me.id);
-     alert('Não foi possível atualizar o saldo da conta: '+accountError.message);
-     return;
-   }
+ // Lançamentos concluídos movimentam a conta escolhida: receita entra, despesa sai.
+ if(status==='paid'){
+   const account=allAccounts.find(a=>a.id===accountId);
+   if(!account){ await db.from('transactions').delete().eq('id',created.id).eq('created_by',me.id); alert('Para um lançamento já concluído, escolha a conta movimentada.'); return; }
+   const before=Number(account.balance||0), after=type==='income'?before+amount:before-amount;
+   if(type==='expense' && after<0){ await db.from('transactions').delete().eq('id',created.id).eq('created_by',me.id); alert(`Saldo insuficiente na conta "${account.name}".\n\nSaldo atual: ${dbMoney(before)}\nDespesa: ${dbMoney(amount)}\nFalta: ${dbMoney(amount-before)}`); return; }
+   const {error:accountError}=await db.from('accounts').update({balance:after,updated_at:new Date().toISOString()}).eq('id',accountId).eq('created_by',me.id);
+   if(accountError){ await db.from('transactions').delete().eq('id',created.id).eq('created_by',me.id); alert('Não foi possível atualizar o saldo da conta: '+accountError.message); return; }
  }
-
- closeModal();
- await loadAll();
+ closeModal();await loadAll();
 }
 window.editTx=async id=>{
  const x=allTransactions.find(t=>t.id===id); if(!x)return;
@@ -416,65 +375,36 @@ window.editTx=async id=>{
  $('#modalContent').innerHTML=`<h3>Editar lançamento</h3><form id="editTxForm">
  <label>Tipo</label><select name="type"><option value="expense" ${x.type==='expense'?'selected':''}>Despesa</option><option value="income" ${x.type==='income'?'selected':''}>Receita</option></select>
  <label>Descrição</label><input name="description" required value="${esc(x.description)}">
- <label>Valor</label><input name="amount" type="number" step="0.01" min="0.01" required value="${Number(x.amount||0)}">
+ <label>Valor</label><input name="amount" type="number" step="0.01" min="0" required value="${Number(x.amount||0)}">
  <label>Vencimento</label><input name="due_date" type="date" value="${x.due_date||''}">
  <label>Status</label><select name="status"><option value="pending" ${x.status==='pending'?'selected':''}>Pendente</option><option value="paid" ${x.status==='paid'?'selected':''}>${x.type==='income'?'Recebido':'Pago'}</option></select>
  <label>Conta</label><select name="account_id"><option value="">Nenhuma</option>${accountOptions}</select>
- <p class="form-note">Receitas recebidas entram no saldo da conta. Despesas pagas são descontadas da conta. Não é possível pagar uma despesa sem saldo suficiente.</p>
+ <p class="form-note">Receitas marcadas como <b>Recebidas</b> entram no saldo da conta escolhida. Despesas continuam sendo descontadas quando forem pagas.</p>
  <button class="primary">Salvar alterações</button></form>`;
  $('#modal').classList.remove('hidden');
-
- const typeSelect=$('#editTxForm').querySelector('[name="type"]');
- const statusSelect=$('#editTxForm').querySelector('[name="status"]');
- typeSelect.addEventListener('change',()=>{
-   const opt=statusSelect.querySelector('option[value="paid"]');
-   if(opt) opt.textContent=typeSelect.value==='income'?'Recebido':'Pago';
- });
-
  $('#editTxForm').addEventListener('submit',async e=>{
    e.preventDefault();
    const f=new FormData(e.target);
    const newType=f.get('type'), newStatus=f.get('status'), newAmount=Number(f.get('amount'));
    const newAccountId=f.get('account_id')||null;
-
-   if(!Number.isFinite(newAmount) || newAmount<=0){alert('Informe um valor válido.');return;}
-   if(newStatus==='paid' && !newAccountId){
-     alert(newType==='income'
-       ? 'Para registrar uma receita como Recebida, escolha a conta onde o dinheiro entrou.'
-       : 'Para registrar uma despesa como Paga, escolha a conta de onde o dinheiro saiu.');
+   if(newType==='income' && newStatus==='paid' && !newAccountId){
+     alert('Para registrar uma receita como Recebida, escolha a conta onde o dinheiro entrou.');
      return;
    }
 
-   const oldPaid=x.status==='paid';
+   // Ajusta somente o que mudou, evitando creditar duas vezes ao salvar novamente.
+   const oldIncomeReceived=x.type==='income' && effectiveStatus(x)==='paid';
+   const newIncomeReceived=newType==='income' && newStatus==='paid';
    const oldAccountId=x.account_id||null;
    const oldAmount=Number(x.amount||0);
-   const oldAccount=oldAccountId?allAccounts.find(a=>a.id===oldAccountId):null;
 
-   // Recalcula o saldo disponível considerando a reversão do lançamento antigo.
-   let availableNewAccount=newAccountId?Number((allAccounts.find(a=>a.id===newAccountId)||{}).balance||0):0;
-   if(newAccountId===oldAccountId && oldPaid && oldAccount){
-     availableNewAccount += (x.type==='income' ? -oldAmount : oldAmount);
-   }
-
-   if(newStatus==='paid' && newType==='expense'){
-     if(!newAccountId || !allAccounts.find(a=>a.id===newAccountId)){
-       alert('A conta escolhida não foi encontrada.');return;
+   if(oldIncomeReceived && oldAccountId){
+     const oldAccount=allAccounts.find(a=>a.id===oldAccountId);
+     if(oldAccount){
+       const oldAfter=Math.max(0,Number(oldAccount.balance||0)-oldAmount);
+       const {error:oldErr}=await db.from('accounts').update({balance:oldAfter,updated_at:new Date().toISOString()}).eq('id',oldAccount.id).eq('created_by',me.id);
+       if(oldErr){alert('Não foi possível ajustar o saldo da conta anterior: '+oldErr.message);return;}
      }
-     if(newAmount>availableNewAccount){
-       const newAccount=allAccounts.find(a=>a.id===newAccountId);
-       alert(`⚠️ SALDO INSUFICIENTE\n\nConta: ${newAccount.name}\nSaldo disponível: ${dbMoney(availableNewAccount)}\nValor da despesa: ${dbMoney(newAmount)}\n\nA alteração não foi salva.`);
-       return;
-     }
-   }
-
-   // Reverte o efeito do lançamento antigo.
-   if(oldPaid && oldAccount){
-     const oldDelta=x.type==='income' ? -oldAmount : oldAmount;
-     const oldAfter=Number(oldAccount.balance||0)+oldDelta;
-     const {error:oldErr}=await db.from('accounts')
-       .update({balance:oldAfter,updated_at:new Date().toISOString()})
-       .eq('id',oldAccount.id).eq('created_by',me.id);
-     if(oldErr){alert('Não foi possível ajustar o saldo da conta anterior: '+oldErr.message);return;}
    }
 
    const payload={
@@ -487,33 +417,23 @@ window.editTx=async id=>{
      account_id:newAccountId,
      updated_at:new Date().toISOString()
    };
-
    const {error}=await db.from('transactions').update(payload).eq('id',id).eq('created_by',me.id);
    if(error){
-     // Restaura o efeito antigo se a edição falhar.
-     if(oldPaid && oldAccount){
-       const oldDelta=x.type==='income' ? oldAmount : -oldAmount;
-       await db.from('accounts').update({balance:Number(oldAccount.balance||0)+oldDelta,updated_at:new Date().toISOString()}).eq('id',oldAccount.id).eq('created_by',me.id);
+     // Tenta restaurar o saldo retirado acima.
+     if(oldIncomeReceived && oldAccountId){
+       const oldAccount=allAccounts.find(a=>a.id===oldAccountId);
+       if(oldAccount) await db.from('accounts').update({balance:Number(oldAccount.balance||0),updated_at:new Date().toISOString()}).eq('id',oldAccount.id).eq('created_by',me.id);
      }
      alert('Não foi possível editar: '+error.message);return;
    }
 
-   // Aplica o efeito do novo lançamento.
-   if(newStatus==='paid' && newAccountId){
+   if(newIncomeReceived && newAccountId){
      const newAccount=allAccounts.find(a=>a.id===newAccountId);
      if(!newAccount){alert('A conta escolhida não foi encontrada.');return;}
-     const delta=newType==='income'?newAmount:-newAmount;
-     const after=Number(newAccount.balance||0)+delta;
-     if(newType==='expense' && after<0){
-       alert('Saldo insuficiente. A alteração do lançamento foi salva, mas o saldo não pode ficar negativo.');
-       closeModal(); await loadAll(); return;
-     }
-     const {error:accountError}=await db.from('accounts')
-       .update({balance:after,updated_at:new Date().toISOString()})
-       .eq('id',newAccount.id).eq('created_by',me.id);
+     const before=Number(newAccount.balance||0), after=before+newAmount;
+     const {error:accountError}=await db.from('accounts').update({balance:after,updated_at:new Date().toISOString()}).eq('id',newAccount.id).eq('created_by',me.id);
      if(accountError){alert('O lançamento foi salvo, mas não foi possível atualizar o saldo da conta: '+accountError.message);return;}
    }
-
    closeModal();await loadAll();
  });
 };
