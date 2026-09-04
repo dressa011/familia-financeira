@@ -368,9 +368,52 @@ window.editTx=async id=>{
 async function saveGoal(e){e.preventDefault();const f=new FormData(e.target),payload={name:f.get('name'),description:f.get('description')||null,target_amount:Number(f.get('target_amount')),current_amount:Number(f.get('current_amount')||0),deadline:f.get('deadline')||null,created_by:me.id};const {error}=await db.from('goals').insert(payload);if(error){alert(error.message);return;}closeModal();await loadAll();}
 
 window.payTx=async id=>{
-  if(!confirm('Marcar esta despesa como PAGA? Ela continuará no histórico.')) return;
-  const {error}=await db.from('transactions').update({status:'paid',paid_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',id).eq('type','expense');
-  if(error) alert('Não foi possível marcar como paga: '+error.message); else await loadAll();
+  const x=allTransactions.find(t=>t.id===id);
+  if(!x || x.type!=='expense') return;
+  if(effectiveStatus(x)==='paid') return;
+  if(!allAccounts.length){
+    alert('Antes de pagar, cadastre pelo menos uma conta em Contas.');
+    return;
+  }
+  const options=allAccounts.map(a=>`<option value="${dbEscAttr(a.id)}" ${x.account_id===a.id?'selected':''}>${esc(a.name)} · saldo ${dbMoney(a.balance)}</option>`).join('');
+  $('#modalContent').innerHTML=`<h3>💳 Pagar despesa</h3>
+    <p class="doc-help"><b>${esc(x.description)}</b> · ${dbMoney(x.amount)}</p>
+    <form id="payTxForm">
+      <label>Por qual conta você vai pagar?</label>
+      <select name="account_id" id="payAccountSelect" required>${options}</select>
+      <div id="payPreview" class="pay-preview"></div>
+      <p class="form-note">Ao confirmar, a despesa será marcada como <b>Paga</b> e o valor será descontado automaticamente do saldo da conta escolhida.</p>
+      <button class="primary" type="submit">✓ Confirmar pagamento</button>
+    </form>`;
+  $('#modal').classList.remove('hidden');
+  const select=$('#payAccountSelect'), preview=$('#payPreview');
+  const updatePreview=()=>{
+    const a=allAccounts.find(a=>a.id===select.value);
+    if(!a)return;
+    const before=Number(a.balance||0), after=before-Number(x.amount||0);
+    preview.innerHTML=`<div><span>Saldo atual</span><b>${dbMoney(before)}</b></div><div><span>Depois do pagamento</span><b class="${after<0?'negative':''}">${dbMoney(after)}</b></div>`;
+  };
+  select.addEventListener('change',updatePreview);
+  updatePreview();
+  $('#payTxForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const accountId=select.value;
+    const account=allAccounts.find(a=>a.id===accountId);
+    if(!account)return;
+    const amount=Number(x.amount||0), newBalance=Number(account.balance||0)-amount;
+    if(!confirm(`Confirmar pagamento de ${dbMoney(amount)} pela conta "${account.name}"?\n\nNovo saldo: ${dbMoney(newBalance)}`)) return;
+    const now=new Date().toISOString();
+    const accountUpdate=await db.from('accounts').update({balance:newBalance,updated_at:now}).eq('id',account.id);
+    if(accountUpdate.error){alert('Não foi possível atualizar o saldo da conta: '+accountUpdate.error.message);return;}
+    const txUpdate=await db.from('transactions').update({status:'paid',paid_at:now,updated_at:now,account_id:account.id}).eq('id',id).eq('type','expense');
+    if(txUpdate.error){
+      await db.from('accounts').update({balance:Number(account.balance||0),updated_at:new Date().toISOString()}).eq('id',account.id);
+      alert('Não foi possível marcar a despesa como paga: '+txUpdate.error.message);
+      return;
+    }
+    closeModal();
+    await loadAll();
+  });
 };
 window.manageDocs=async id=>{
   const {data,error}=await db.from('documents').select('id,file_name,storage_path,created_at').eq('transaction_id',id).order('created_at',{ascending:false});

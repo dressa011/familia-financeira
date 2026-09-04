@@ -1078,3 +1078,6 @@ input:focus,select:focus,textarea:focus{border-color:#a78bfa!important;box-shado
   .balance-hero{min-height:245px!important}.hero-copy strong{font-size:30px!important}
   .panel-title h3{font-size:13px!important}
 }
+
+/* Pagamento de despesa - 5.1 */
+.pay-preview{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;padding:12px;border:1px solid #e6ebf3;border-radius:14px;background:#f8faff}.pay-preview div{padding:10px;border-radius:11px;background:#fff}.pay-preview span{display:block;color:#8190a4;font-size:9px;font-weight:700}.pay-preview b{display:block;margin-top:4px;font-size:13px;color:#1b2a41}.pay-preview b.negative{color:#df3d4e}
