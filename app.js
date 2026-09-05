@@ -323,64 +323,33 @@ function openModal(type){
  let title='',html='';
  if(type==='transaction'){
   title='Novo lançamento';
-  const accountOptions=allAccounts.map(a=>`<option value="${dbEscAttr(a.id)}">${esc(a.name)} · saldo ${dbMoney(a.balance)}</option>`).join('');
-  const cardOptions=allCards.map(c=>`<option value="${dbEscAttr(c.id)}">${esc(c.name)}${c.last4?' · •••• '+esc(c.last4):''}</option>`).join('');
-  html=`<form id="txForm"><label>Tipo</label><select name="type"><option value="expense">Despesa</option><option value="income">Receita</option></select><label>Descrição</label><input name="description" required placeholder="Ex.: Supermercado"><label>Valor</label><input name="amount" type="number" step="0.01" min="0" required><label>Vencimento</label><input name="due_date" type="date"><label>Status</label><select name="status" id="txStatusSelect"><option value="pending">Pendente</option><option value="paid">Pago</option></select><label>Conta</label><select name="account_id" id="txAccountSelect"><option value="">Nenhuma</option>${accountOptions}</select><label>Cartão</label><select name="card_id"><option value="">Nenhum</option>${cardOptions}</select><p class="form-note">Para lançamentos Pagos/Recebidos, escolha a conta movimentada. O saldo será atualizado automaticamente. Compras parceladas feitas pela tela Cartões já entram automaticamente em Finanças.</p><button class="primary">Salvar lançamento</button></form>`;
+  const accountOptions=allAccounts.map(a=>`<option value="account:${dbEscAttr(a.id)}">🏦 ${esc(a.name)} · saldo ${dbMoney(a.balance)}</option>`).join('');
+  const cardOptions=allCards.map(c=>`<option value="card:${dbEscAttr(c.id)}">💳 ${esc(c.name)}${c.last4?' · •••• '+esc(c.last4):''} · disponível ${dbMoney(cardAvailable(c))}</option>`).join('');
+  html=`<form id="txForm"><label>Tipo</label><select name="type"><option value="expense">Despesa</option><option value="income">Receita</option></select><label>Descrição</label><input name="description" required placeholder="Ex.: Supermercado"><label>Valor</label><input name="amount" type="number" step="0.01" min="0" required><label>Vencimento</label><input name="due_date" type="date"><label>Status</label><select name="status" id="txStatusSelect"><option value="pending">Pendente</option><option value="paid">Pago</option></select><label>De onde saiu / para onde entrou?</label><select name="source" id="txSourceSelect"><option value="">Nenhum</option>${accountOptions}${cardOptions}</select><div id="txSourcePreview" class="pay-preview"></div><p class="form-note">🏦 Conta: o saldo é movimentado conforme o status. 💳 Cartão de crédito: a despesa entra na fatura e reduz o crédito disponível; o dinheiro só sai da conta quando a fatura for paga.</p><button class="primary">Salvar lançamento</button></form>`;
  }else{
   title='Nova meta';html=`<form id="goalForm"><label>Nome</label><input name="name" required placeholder="Ex.: Reserva de emergência"><label>Valor da meta</label><input name="target_amount" type="number" step="0.01" min="0.01" required><label>Valor já guardado</label><input name="current_amount" type="number" step="0.01" min="0" value="0"><label>Prazo</label><input name="deadline" type="date"><label>Descrição</label><textarea name="description" rows="3"></textarea><button class="primary">Salvar meta</button></form>`;
  }
  $('#modalContent').innerHTML=`<h3>${title}</h3>${html}`;$('#modal').classList.remove('hidden');$('#txForm')?.addEventListener('submit',saveTransaction);
-$('#txForm')?.querySelector('[name="type"]')?.addEventListener('change',e=>{ const status=$('#txStatusSelect'); const isIncome=e.target.value==='income'; if(status){ const paid=status.querySelector('option[value="paid"]'); if(paid) paid.textContent=isIncome?'Recebido':'Pago'; } }); $('#txStatusSelect')?.addEventListener('change',e=>{ const type=$('#txForm')?.querySelector('[name="type"]')?.value; const paid=e.target.querySelector('option[value="paid"]'); if(paid) paid.textContent=type==='income'?'Recebido':'Pago'; }); $('#goalForm')?.addEventListener('submit',saveGoal);
+ const txType=$('#txForm')?.querySelector('[name="type"]'),txStatus=$('#txStatusSelect'),txSource=$('#txSourceSelect'),txPreview=$('#txSourcePreview');
+ const refreshTxSource=()=>{if(!txSource)return;const isIncome=txType?.value==='income';[...txSource.options].forEach(o=>{if(o.value.startsWith('card:'))o.disabled=isIncome;});if(isIncome&&txSource.value.startsWith('card:'))txSource.value='';if(txStatus){const paid=txStatus.querySelector('option[value="paid"]');if(paid)paid.textContent=isIncome?'Recebido':'Pago';}const amount=Number($('#txForm [name="amount"]')?.value||0),v=txSource.value||'';if(v.startsWith('account:')){const a=allAccounts.find(x=>x.id===v.slice(8));if(a){const after=Number(a.balance||0)+(isIncome?amount:-amount);txPreview.innerHTML=`<div><span>Saldo disponível</span><b>${dbMoney(a.balance)}</b></div><div><span>Depois</span><b class="${after<0?'negative':''}">${dbMoney(after)}</b></div>`;return;}}if(v.startsWith('card:')){const c=allCards.find(x=>x.id===v.slice(5));if(c){const av=cardAvailable(c),after=av-amount;txPreview.innerHTML=`<div><span>Crédito disponível</span><b>${dbMoney(av)}</b></div><div><span>Após a compra</span><b class="${after<0?'negative':''}">${dbMoney(after)}</b></div>`;return;}}txPreview.innerHTML='';};
+ txType?.addEventListener('change',refreshTxSource);txStatus?.addEventListener('change',refreshTxSource);txSource?.addEventListener('change',refreshTxSource);$('#txForm [name="amount"]')?.addEventListener('input',refreshTxSource);refreshTxSource();$('#goalForm')?.addEventListener('submit',saveGoal);
 }
 function closeModal(){$('#modal').classList.add('hidden')}
 async function saveTransaction(e){
- e.preventDefault();
- const f=new FormData(e.target);
- const type=f.get('type'), status=f.get('status'), amount=Number(f.get('amount'));
- const accountId=f.get('account_id')||null;
-
- if(!Number.isFinite(amount) || amount<=0){
-   alert('Informe um valor válido.');
-   return;
- }
-
- if(status==='paid' && !accountId){
-   alert(type==='income'
-     ? 'Para registrar uma receita como Recebida, escolha a conta onde o dinheiro entrou.'
-     : 'Para registrar uma despesa como Paga, escolha a conta de onde o dinheiro saiu.');
-   return;
- }
-
- const account=accountId ? allAccounts.find(a=>a.id===accountId) : null;
-
- // Uma despesa paga precisa ter saldo suficiente na conta escolhida.
- if(type==='expense' && status==='paid'){
-   if(!account){
-     alert('A conta escolhida não foi encontrada.');
-     return;
-   }
-   const balance=Number(account.balance||0);
-   if(amount>balance){
-     alert(`⚠️ SALDO INSUFICIENTE\n\nConta: ${account.name}\nSaldo disponível: ${dbMoney(balance)}\nValor da despesa: ${dbMoney(amount)}\n\nA despesa não foi registrada como paga.`);
-     return;
-   }
- }
-
- const payload={
-   type,
-   description:f.get('description'),
-   amount,
-   due_date:f.get('due_date')||null,
-   status,
-   created_by:me.id,
-   responsible_profile_id:me.id,
-   paid_at:status==='paid'?new Date().toISOString():null,
-   account_id:accountId,
-   card_id:f.get('card_id')||null
- };
-
- const {data:created,error}=await db.from('transactions').insert(payload).select('id').single();
- if(error){alert(error.message);return;}
+ e.preventDefault();const f=new FormData(e.target);const type=f.get('type'),status=f.get('status'),amount=Number(f.get('amount')),source=f.get('source')||'';
+ const accountId=source.startsWith('account:')?source.slice(8):null,cardId=source.startsWith('card:')?source.slice(5):null;
+ if(!Number.isFinite(amount)||amount<=0){alert('Informe um valor válido.');return;}
+ if(type==='income'&&cardId){alert('Receitas devem entrar em uma conta, não em cartão de crédito.');return;}
+ if(status==='paid'&&!accountId&&!cardId){alert(type==='income'?'Escolha a conta onde a receita entrou.':'Escolha uma conta ou cartão de crédito.');return;}
+ const account=accountId?allAccounts.find(a=>a.id===accountId):null,card=cardId?allCards.find(c=>c.id===cardId):null;
+ if(accountId&&!account){alert('A conta escolhida não foi encontrada.');return;}if(cardId&&!card){alert('O cartão escolhido não foi encontrado.');return;}
+ if(cardId&&type==='expense'){const available=cardAvailable(card);if(amount>available){alert(`🔴 LIMITE INSUFICIENTE\n\nCartão: ${card.name}\nDisponível: ${dbMoney(available)}\nValor: ${dbMoney(amount)}\nFalta: ${dbMoney(amount-available)}`);return;}if(status==='paid'){alert('Compra no cartão deve ficar pendente na fatura. Pague a fatura depois pela conta bancária.');return;}}
+ if(type==='expense'&&status==='paid'&&account&&amount>Number(account.balance||0)){alert(`⚠️ SALDO INSUFICIENTE\n\nConta: ${account.name}\nDisponível: ${dbMoney(account.balance)}\nValor: ${dbMoney(amount)}`);return;}
+ let cardPurchaseId=null;
+ if(cardId&&type==='expense'){const purchase={card_id:cardId,description:f.get('description'),amount,purchase_date:f.get('due_date')||todayISO(),installments:1,installment_amount:amount,created_by:me.id};const {data:cp,error:cpError}=await db.from('card_purchases').insert(purchase).select().single();if(cpError){alert('Não foi possível registrar a compra no cartão: '+cpError.message);return;}cardPurchaseId=cp.id;}
+ const payload={type,description:f.get('description'),amount,due_date:f.get('due_date')||null,status,created_by:me.id,responsible_profile_id:me.id,paid_at:status==='paid'?new Date().toISOString():null,account_id:accountId,card_id:cardId,card_purchase_id:cardPurchaseId,installment_number:cardId?1:null,installments:cardId?1:null};
+const {data:created,error}=await db.from('transactions').insert(payload).select('id').single();
+ if(error){if(cardPurchaseId) await db.from('card_purchases').delete().eq('id',cardPurchaseId).eq('created_by',me.id);alert(error.message);return;}
 
  // Atualiza o saldo somente depois que o lançamento foi salvo.
  if(status==='paid' && accountId){
