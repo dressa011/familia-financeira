@@ -687,24 +687,57 @@ window.editCard=id=>{const x=allCards.find(x=>x.id===id);if(x)openLocalEdit('car
 window.deleteCard=async id=>{if(!confirm('Excluir este cartão e suas compras do banco?'))return;const {error}=await db.from('cards').delete().eq('id',id).eq('created_by',me.id);if(error)alert(error.message);else{await loadAll();renderLocalModules();}};
 window.addCardPurchase=async id=>{const c=allCards.find(x=>x.id===id);if(!c)return;localModal('Nova compra no cartão',`<form id="purchaseForm"><label>Descrição</label><input name="description" required placeholder="Ex.: Mercado"><label>Valor total da compra</label><input name="amount" type="number" step="0.01" min="0.01" required><label>Data da compra</label><input name="date" type="date" value="${todayISO()}"><label>Parcelas</label><input name="installments" type="number" min="1" max="60" value="1"><div class="installment-preview" id="installmentPreview">1x de R$ 0,00</div><p class="form-note">A compra será salva no Supabase e cada parcela será criada no financeiro.</p><button class="primary">Adicionar compra</button></form>`);const updateInstallmentPreview=()=>{const total=Number($('#purchaseForm [name=amount]')?.value||0),n=Math.max(1,Number($('#purchaseForm [name=installments]')?.value||1));$('#installmentPreview').textContent=`${n}x de ${dbMoney(total/n)}`};$('#purchaseForm [name=amount]')?.addEventListener('input',updateInstallmentPreview);$('#purchaseForm [name=installments]')?.addEventListener('input',updateInstallmentPreview);updateInstallmentPreview();$('#purchaseForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target),total=Number(f.get('amount')),n=Math.max(1,Number(f.get('installments')||1)),date=f.get('date')||todayISO(),part=Number((total/n).toFixed(2));const purchase={card_id:id,description:f.get('description'),amount:total,purchase_date:date,installments:n,installment_amount:part,created_by:me.id};const {data:cp,error:cpError}=await db.from('card_purchases').insert(purchase).select().single();if(cpError){alert('Não foi possível salvar a compra: '+cpError.message);return;}const rows=[];let remaining=total;for(let i=1;i<=n;i++){const value=i===n?Number(remaining.toFixed(2)):part;remaining-=value;rows.push({type:'expense',description:`${purchase.description}${n>1?` (${i}/${n})`:''}`,amount:value,due_date:addMonthsISO(date,i-1,c.due_day),status:'pending',created_by:me.id,responsible_profile_id:me.id,card_id:id,card_purchase_id:cp.id,installment_number:i,installments:n});}const {error:txError}=await db.from('transactions').insert(rows);if(txError){await db.from('card_purchases').delete().eq('id',cp.id).eq('created_by',me.id);alert('A compra foi revertida porque as parcelas não puderam ser criadas: '+txError.message);return;}closeModal();await loadAll();renderLocalModules();}};
 window.generateCardTx=async id=>{};
+function currentCardBill(cardId){
+  const month=todayISO().slice(0,7);
+  return allTransactions.filter(t=>t.card_id===cardId&&monthOf(t)===month).reduce((sum,t)=>sum+Number(t.amount||0),0);
+}
+function cardAvailable(card){
+  return Math.max(0,Number(card?.limit_amount||0)-currentCardBill(card?.id));
+}
 window.generateRecurrence=async id=>{
   const r=allRecurrences.find(x=>x.id===id);if(!r)return;
-  let accountId=null;
   if(r.type==='expense'){
-    if(!allAccounts.length){alert('Antes de gerar uma despesa recorrente, cadastre pelo menos uma conta em Contas.');return;}
-    const options=allAccounts.map(a=>`<option value="${dbEscAttr(a.id)}">${esc(a.name)} · saldo ${dbMoney(a.balance)}</option>`).join('');
-    $('#modalContent').innerHTML=`<h3>🔄 Gerar despesa recorrente</h3><p class="doc-help"><b>${esc(r.description)}</b> · ${dbMoney(r.amount)}</p><form id="generateRecForm"><label>De qual conta você pretende pagar?</label><select name="account_id" id="recAccountSelect" required>${options}</select><p class="form-note">A despesa será criada como <b>Pendente</b>. O saldo só será descontado quando você clicar em <b>Pagar</b> no Financeiro.</p><button class="primary" type="submit">✓ Gerar lançamento</button></form>`;
+    if(!allAccounts.length && !allCards.length){alert('Antes de gerar uma despesa recorrente, cadastre pelo menos uma conta ou um cartão de crédito em Contas/Cartões.');return;}
+    const accountOptions=allAccounts.map(a=>`<option value="account:${dbEscAttr(a.id)}">🏦 ${esc(a.name)} · saldo ${dbMoney(a.balance)}</option>`).join('');
+    const cardOptions=allCards.map(c=>`<option value="card:${dbEscAttr(c.id)}">💳 ${esc(c.name)} · disponível ${dbMoney(cardAvailable(c))}</option>`).join('');
+    $('#modalContent').innerHTML=`<h3>🔄 Gerar despesa recorrente</h3><p class="doc-help"><b>${esc(r.description)}</b> · ${dbMoney(r.amount)}</p><form id="generateRecForm"><label>De onde o dinheiro/crédito será utilizado?</label><select name="source" id="recSourceSelect" required><option value="">Selecione...</option>${accountOptions}${cardOptions}</select><div id="recSourcePreview" class="pay-preview"></div><p class="form-note">🏦 Conta: o lançamento fica Pendente e o saldo só sai quando for pago. 💳 Cartão: a despesa entra automaticamente na fatura e reduz o crédito disponível.</p><button class="primary" type="submit">✓ Gerar lançamento</button></form>`;
     $('#modal').classList.remove('hidden');
-    $('#generateRecForm').addEventListener('submit',async e=>{e.preventDefault();accountId=$('#recAccountSelect').value;await finishGenerateRecurrence(r,accountId);});
+    const select=$('#recSourceSelect'),preview=$('#recSourcePreview');
+    const updatePreview=()=>{
+      const value=select.value||'';
+      if(value.startsWith('account:')){
+        const a=allAccounts.find(x=>x.id===value.slice(8));if(!a){preview.innerHTML='';return;}
+        const after=Number(a.balance||0)-Number(r.amount||0);
+        preview.innerHTML=`<div><span>Saldo disponível</span><b>${dbMoney(a.balance)}</b></div><div><span>Após pagar</span><b class="${after<0?'negative':''}">${dbMoney(after)}</b></div>`;
+      }else if(value.startsWith('card:')){
+        const c=allCards.find(x=>x.id===value.slice(5));if(!c){preview.innerHTML='';return;}
+        const available=cardAvailable(c),after=available-Number(r.amount||0);
+        preview.innerHTML=`<div><span>Crédito disponível</span><b>${dbMoney(available)}</b></div><div><span>Após gerar</span><b class="${after<0?'negative':''}">${dbMoney(after)}</b></div>`;
+      }else preview.innerHTML='';
+    };
+    select.addEventListener('change',updatePreview);updatePreview();
+    $('#generateRecForm').addEventListener('submit',async e=>{e.preventDefault();const source=select.value;if(source.startsWith('account:'))await finishGenerateRecurrence(r,source.slice(8),null);else if(source.startsWith('card:'))await finishGenerateRecurrence(r,null,source.slice(5));});
     return;
   }
   if(!confirm(`Gerar a receita “${r.description}” de ${dbMoney(r.amount)} no financeiro?`))return;
-  await finishGenerateRecurrence(r,null);
+  await finishGenerateRecurrence(r,null,null);
 };
-async function finishGenerateRecurrence(r,accountId){
-  const payload={type:r.type,description:r.description,amount:Number(r.amount),due_date:r.next_date||todayISO(),status:'pending',created_by:me.id,responsible_profile_id:me.id,recurrence_id:r.id,...(accountId?{account_id:accountId}:{})};
-  const {error}=await db.from('transactions').insert(payload);
-  if(error){alert('Não foi possível gerar o lançamento: '+error.message);return;}
+async function finishGenerateRecurrence(r,accountId,cardId){
+  if(r.type==='expense' && cardId){
+    const card=allCards.find(c=>c.id===cardId);if(!card){alert('Cartão selecionado não foi encontrado.');return;}
+    const available=cardAvailable(card),amount=Number(r.amount||0);
+    if(amount>available){alert(`🔴 LIMITE DO CARTÃO INSUFICIENTE!\n\nCartão: ${card.name}\nCrédito disponível: ${dbMoney(available)}\nValor da recorrência: ${dbMoney(amount)}\nFalta: ${dbMoney(amount-available)}\n\nEscolha outro cartão ou uma conta.`);return;}
+    const purchase={card_id:cardId,description:r.description,amount,purchase_date:r.next_date||todayISO(),installments:1,installment_amount:amount,created_by:me.id};
+    const {data:cp,error:cpError}=await db.from('card_purchases').insert(purchase).select().single();
+    if(cpError){alert('Não foi possível lançar a recorrência no cartão: '+cpError.message);return;}
+    const payload={type:'expense',description:r.description,amount,due_date:r.next_date||todayISO(),status:'pending',created_by:me.id,responsible_profile_id:me.id,recurrence_id:r.id,card_id:cardId,card_purchase_id:cp.id,installment_number:1,installments:1};
+    const {error}=await db.from('transactions').insert(payload);
+    if(error){await db.from('card_purchases').delete().eq('id',cp.id).eq('created_by',me.id);alert('A recorrência foi revertida porque o lançamento no cartão não pôde ser criado: '+error.message);return;}
+  }else{
+    const payload={type:r.type,description:r.description,amount:Number(r.amount),due_date:r.next_date||todayISO(),status:'pending',created_by:me.id,responsible_profile_id:me.id,recurrence_id:r.id,...(accountId?{account_id:accountId}:{})};
+    const {error}=await db.from('transactions').insert(payload);
+    if(error){alert('Não foi possível gerar o lançamento: '+error.message);return;}
+  }
   const next=r.frequency==='weekly'?addMonthsISO(r.next_date||todayISO(),0):r.frequency==='yearly'?addMonthsISO(r.next_date||todayISO(),12):addMonthsISO(r.next_date||todayISO(),1);let nextDate=next;if(r.frequency==='weekly'){const d=new Date(`${r.next_date||todayISO()}T12:00:00`);d.setDate(d.getDate()+7);nextDate=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
   const {error:updateError}=await db.from('recurrences').update({next_date:nextDate}).eq('id',r.id).eq('created_by',me.id);
   if(updateError){alert('Lançamento criado, mas não foi possível atualizar a próxima data: '+updateError.message);}
