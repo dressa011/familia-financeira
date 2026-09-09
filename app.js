@@ -84,7 +84,7 @@ async function loadAll(){
   if(c.error) console.error('cards:',c.error);
   if(cp.error) console.error('card_purchases:',cp.error);
   if(r.error) console.error('recurrences:',r.error);
-  allAccounts=a.data||[]; allCards=c.data||[]; allCardPurchases=cp.data||[]; allRecurrences=r.data||[];
+  allAccounts=a.data||[]; allCards=c.data||[]; allCardPurchases=cp.data||[]; allRecurrences=r.data||[]; allGoals=g.data||[];
   if(l.error) console.error('audit_logs:',l.error);
 
   const tx=t.data||[], goals=g.data||[], fin=f.data||[], logs=l.data||[];
@@ -571,13 +571,30 @@ window.deleteTx=async id=>{if(!confirm('Excluir este lançamento?'))return;const
 window.deleteGoal=async id=>{if(!confirm('Excluir esta meta?'))return;const {error}=await db.from('goals').delete().eq('id',id).eq('created_by',me.id);if(error)alert(error.message);else await loadAll()};
 window.addToGoal=async id=>{
   const g=allGoals.find(x=>x.id===id);
-  if(!g)return;
+  if(!g){alert('Não foi possível localizar esta meta. Atualize a página e tente novamente.');return;}
+
   const amountText=prompt(`Quanto deseja colocar na meta “${g.name}”?`);
   if(amountText===null)return;
-  const n=Number(amountText);
-  if(!Number.isFinite(n)||n<=0)return alert('Informe um valor válido.');
-  if(!allAccounts.length)return alert('Antes de adicionar dinheiro à meta, cadastre pelo menos uma conta em Contas.');
+
+  const raw=String(amountText).trim();
+  const n=Number(raw.includes(',') ? raw.replace(/\./g,'').replace(',','.') : raw);
+  if(!Number.isFinite(n)||n<=0){alert('Informe um valor válido.');return;}
+
+  const current=Number(g.current_amount||0);
+  const target=Number(g.target_amount||0);
+  const remaining=Math.max(0,target-current);
+
+  if(remaining>0 && n>remaining){
+    if(!confirm(`O valor informado (${dbMoney(n)}) é maior que o que falta para completar a meta (${dbMoney(remaining)}).\\n\\nDeseja adicionar mesmo assim?`))return;
+  }
+
+  if(!allAccounts.length){
+    alert('Antes de adicionar dinheiro à meta, cadastre pelo menos uma conta em Contas.');
+    return;
+  }
+
   const options=allAccounts.map(a=>`<option value="${dbEscAttr(a.id)}">${esc(a.name)} · saldo ${dbMoney(a.balance)}</option>`).join('');
+
   $('#modalContent').innerHTML=`<h3>🎯 Colocar dinheiro na meta</h3>
     <p class="doc-help"><b>${esc(g.name)}</b> · adicionar ${dbMoney(n)}</p>
     <form id="goalPayForm">
@@ -587,22 +604,59 @@ window.addToGoal=async id=>{
       <p class="form-note">O valor será descontado da conta escolhida e acrescentado à meta.</p>
       <button class="primary" type="submit">✓ Confirmar aporte</button>
     </form>`;
+
   $('#modal').classList.remove('hidden');
+
   const select=$('#goalAccountSelect'),preview=$('#goalPayPreview');
-  const updatePreview=()=>{const a=allAccounts.find(a=>a.id===select.value);if(!a)return;const before=Number(a.balance||0),after=before-n;preview.innerHTML=`<div><span>Saldo atual</span><b>${dbMoney(before)}</b></div><div><span>Depois do aporte</span><b class="${after<0?'negative':''}">${dbMoney(after)}</b></div>`};
-  select.addEventListener('change',updatePreview);updatePreview();
+  const updatePreview=()=>{
+    const a=allAccounts.find(a=>a.id===select.value);
+    if(!a)return;
+    const before=Number(a.balance||0),after=before-n;
+    preview.innerHTML=`<div><span>Saldo atual</span><b>${dbMoney(before)}</b></div><div><span>Depois do aporte</span><b class="${after<0?'negative':''}">${dbMoney(after)}</b></div>`;
+  };
+
+  select.addEventListener('change',updatePreview);
+  updatePreview();
+
   $('#goalPayForm').addEventListener('submit',async e=>{
     e.preventDefault();
-    const account=allAccounts.find(a=>a.id===select.value);if(!account)return;
+
+    const account=allAccounts.find(a=>a.id===select.value);
+    if(!account)return;
+
     const before=Number(account.balance||0),after=before-n;
-    if(after<0){alert(`🔴 SALDO INSUFICIENTE!\n\nConta: ${account.name}\nSaldo atual: ${dbMoney(before)}\nValor para a meta: ${dbMoney(n)}\nFalta: ${dbMoney(n-before)}`);return;}
-    if(!confirm(`Adicionar ${dbMoney(n)} à meta “${g.name}” usando a conta “${account.name}”?\n\nNovo saldo da conta: ${dbMoney(after)}`))return;
+    if(after<0){
+      alert(`🔴 SALDO INSUFICIENTE!\\n\\nConta: ${account.name}\\nSaldo atual: ${dbMoney(before)}\\nValor para a meta: ${dbMoney(n)}\\nFalta: ${dbMoney(n-before)}`);
+      return;
+    }
+
+    if(!confirm(`Adicionar ${dbMoney(n)} à meta “${g.name}” usando a conta “${account.name}”?\\n\\nNovo saldo da conta: ${dbMoney(after)}`))return;
+
     const now=new Date().toISOString();
-    const accountUpdate=await db.from('accounts').update({balance:after,updated_at:now}).eq('id',account.id).eq('created_by',me.id);
-    if(accountUpdate.error){alert('Não foi possível atualizar o saldo da conta: '+accountUpdate.error.message);return;}
-    const goalUpdate=await db.from('goals').update({current_amount:Number(g.current_amount||0)+n,updated_at:now}).eq('id',g.id).eq('created_by',me.id);
-    if(goalUpdate.error){await db.from('accounts').update({balance:before,updated_at:new Date().toISOString()}).eq('id',account.id).eq('created_by',me.id);alert('Não foi possível atualizar a meta: '+goalUpdate.error.message);return;}
-    closeModal();await loadAll();
+
+    const accountUpdate=await db.from('accounts')
+      .update({balance:after,updated_at:now})
+      .eq('id',account.id).eq('created_by',me.id);
+
+    if(accountUpdate.error){
+      alert('Não foi possível atualizar o saldo da conta: '+accountUpdate.error.message);
+      return;
+    }
+
+    const goalUpdate=await db.from('goals')
+      .update({current_amount:current+n,updated_at:now})
+      .eq('id',g.id).eq('created_by',me.id);
+
+    if(goalUpdate.error){
+      await db.from('accounts')
+        .update({balance:before,updated_at:new Date().toISOString()})
+        .eq('id',account.id).eq('created_by',me.id);
+      alert('Não foi possível atualizar a meta: '+goalUpdate.error.message);
+      return;
+    }
+
+    closeModal();
+    await loadAll();
   });
 };
 
