@@ -558,7 +558,7 @@ window.manageDocs=async id=>{
   const {data,error}=await db.from('documents').select('id,file_name,storage_path,created_at').eq('transaction_id',id).order('created_at',{ascending:false});
   if(error){alert('Não foi possível carregar os PDFs: '+error.message);return;}
   let html='<h3>PDF / Comprovante</h3><p class="doc-help">Escolha um PDF para anexar especificamente a este lançamento.</p><input id="docFile" type="file" accept="application/pdf,.pdf">';
-  if((data||[]).length){html+='<div class="doc-list">'+data.map(d=>`<div class="doc-item"><span>📄 ${esc(d.file_name)}</span><button class="secondary" onclick="openDoc('${d.id}')">Abrir</button></div>`).join('')+'</div>';} else html+='<p class="empty">Nenhum PDF anexado.</p>';
+  if((data||[]).length){html+='<div class="doc-list">'+data.map(d=>`<div class="doc-item"><span>📄 ${esc(d.file_name)}</span><div class="doc-actions"><button class="secondary" onclick="openDoc('${d.id}')">Abrir</button><button class="danger" onclick="deleteDoc('${d.id}','${id}')">Excluir</button></div></div>`).join('')+'</div>';} else html+='<p class="empty">Nenhum PDF anexado.</p>';
   $('#modalContent').innerHTML=html; $('#modal').classList.remove('hidden');
   $('#docFile').addEventListener('change',e=>uploadDoc(id,e.target.files[0]));
 };
@@ -578,6 +578,18 @@ window.openDoc=async id=>{
   const r=await db.storage.from('documents').createSignedUrl(data.storage_path,300);
   if(r.error){alert('Não foi possível abrir o PDF: '+r.error.message);return;}
   window.open(r.data.signedUrl,'_blank','noopener');
+};
+window.deleteDoc=async (id,transactionId)=>{
+  if(!confirm('Excluir este PDF? Esta ação não poderá ser desfeita.'))return;
+  const {data,error}=await db.from('documents').select('storage_path,file_name').eq('id',id).single();
+  if(error){alert('Não foi possível localizar o PDF: '+error.message);return;}
+  const del=await db.from('documents').delete().eq('id',id);
+  if(del.error){alert('Não foi possível excluir o registro do PDF: '+del.error.message);return;}
+  if(data.storage_path){
+    const storage=await db.storage.from('documents').remove([data.storage_path]);
+    if(storage.error){alert('O PDF foi removido da lista, mas não foi possível remover o arquivo do armazenamento: '+storage.error.message);}
+  }
+  await manageDocs(transactionId);
 };
 
 window.deleteTx=async id=>{if(!confirm('Excluir este lançamento?'))return;const x=allTransactions.find(t=>t.id===id);if(!x)return;if(effectiveStatus(x)==='paid'&&x.account_id){const a=allAccounts.find(a=>a.id===x.account_id);if(a){const before=Number(a.balance||0),delta=x.type==='income'?-Number(x.amount||0):Number(x.amount||0);const r=await db.from('accounts').update({balance:before+delta,updated_at:new Date().toISOString()}).eq('id',a.id).eq('created_by',me.id);if(r.error){alert('Não foi possível ajustar o saldo da conta antes de excluir: '+r.error.message);return;}}}const {error}=await db.from('transactions').delete().eq('id',id).eq('created_by',me.id);if(error)alert(error.message);else await loadAll()};
